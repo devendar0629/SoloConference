@@ -30,12 +30,8 @@ export default function RootLayout() {
         injectStoreCallbacks(onRefresh, onFailure);
 
         const checkAuthStatus = async () => {
-            console.log("Checking auth status ...");
-
             try {
                 const user = await fetchCurrentUser();
-
-                console.log("Fetched user: ", user);
 
                 storeLogin(user);
             } catch (error) {
