@@ -1,8 +1,8 @@
-import { handleConferenceJoin } from "./join";
-import { handleConferenceLeave } from "./leave";
-import { handleConferenceOffer } from "./offer";
-import { handleConferenceAnswer } from "./answer";
-import { handleConferenceIceCandidate } from "./ice-candidate";
+import { handleConferenceJoin } from "./join.handler";
+import { handleConferenceLeave } from "./leave.handler";
+import { handleConferenceOffer } from "./offer.handler";
+import { handleConferenceAnswer } from "./answer.handler";
+import { handleConferenceIceCandidate } from "./ice-candidate.handler";
 
 export default {
     handleConferenceJoin,
