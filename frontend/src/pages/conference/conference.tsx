@@ -292,18 +292,6 @@ export default function ConferencePage() {
                     if (remoteVideoRef.current) {
                         remoteVideoRef.current.srcObject = null;
                     }
-                    closePeerConnection();
-
-                    // Re-initialize peer connection for when another user joins
-                    if (userMediaStream) {
-                        initializePeerConnection(undefined, (candidate) => {
-                            emitEvent("conference:ice-candidate", {
-                                conference_id: conferenceId,
-                                iceCandidate: candidate
-                            });
-                        });
-                        addLocalStream(userMediaStream);
-                    }
 
                     break;
                 }
@@ -326,9 +314,9 @@ export default function ConferencePage() {
     const {
         socket,
         connect: connectSocket,
-        disconnect,
+        disconnect: disconnectSocket,
         emitEvent,
-        isConnected
+        isConnected: isSocketConnected
     } = useSocket({
         onConnect: (_, emit) => {
             console.log("Connected to signaling server");
@@ -343,7 +331,7 @@ export default function ConferencePage() {
             stopUserMedia();
             disconnect();
         }
-    }, [joinError, stopUserMedia, disconnect]);
+    }, [joinError, stopUserMedia, disconnectSocket]);
 
     // Handle joining the room
     const handleJoin = async () => {
@@ -354,13 +342,13 @@ export default function ConferencePage() {
 
     // Handle hanging up
     const handleLeave = () => {
-        if (conferenceId && isConnected) {
+        if (conferenceId && isSocketConnected) {
             emitEvent("conference:leave", { conference_id: conferenceId });
         }
 
         stopUserMedia();
         closePeerConnection();
-        disconnect();
+        disconnectSocket();
         setHasJoined(false);
         navigate("/dashboard");
     };
@@ -462,7 +450,7 @@ export default function ConferencePage() {
                 </div>
 
                 <div className="flex items-center gap-2 rounded-full bg-zinc-900/60 backdrop-blur-md px-3 py-1.5 ring-1 ring-white/10 shadow-sm">
-                    {isConnected ? (
+                    {isSocketConnected ? (
                         <>
                             <Wifi className="h-3.5 w-3.5 text-emerald-500" />
                             <span className="text-xs font-medium text-zinc-300">
