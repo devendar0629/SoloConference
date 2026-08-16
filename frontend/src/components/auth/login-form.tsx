@@ -19,14 +19,13 @@ import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginFormSchema, type LoginFormData } from "@/schemas/login";
 import { useLoginMutation } from "@/api/login";
-import { useStore } from "@/store";
+import { AxiosError } from "axios";
 
 export default function LoginForm({
     className,
     ...props
 }: React.ComponentProps<"div">) {
     const loginMutation = useLoginMutation();
-    const { login: storeLogin } = useStore((state) => state.auth);
 
     const form = useForm({
         resolver: zodResolver(loginFormSchema),
@@ -38,9 +37,23 @@ export default function LoginForm({
 
     const handleSubmit: SubmitHandler<LoginFormData> = (data) => {
         loginMutation.mutate(data, {
-            onSuccess: (data) => {
-                console.log("loginMutation :: onSuccess:", data);
-                storeLogin(data);
+            onError: (error) => {
+                if (
+                    error instanceof AxiosError &&
+                    error.response?.data?.code === "INVALID_CREDENTIALS"
+                ) {
+                    form.setError("root", {
+                        message:
+                            "Invalid credentials. Please check your email and password."
+                    });
+
+                    return;
+                }
+
+                form.setError("root", {
+                    message:
+                        "An unexpected error occurred. Please try again later."
+                });
             }
         });
     };
@@ -124,6 +137,12 @@ export default function LoginForm({
                                     );
                                 }}
                             />
+
+                            {form.formState.errors.root?.message && (
+                                <FieldError
+                                    errors={[form.formState.errors.root]}
+                                />
+                            )}
 
                             <Button
                                 className="py-4.5 px-3 mt-1 text-base font-semibold cursor-pointer"

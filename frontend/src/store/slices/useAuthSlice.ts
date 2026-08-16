@@ -39,6 +39,7 @@ export const createAuthSlice: StateCreator<
         logout: () => {
             set((state) => {
                 state.auth.user = null;
+
                 state.auth.isLoggedIn = false;
                 state.auth.isInitializing = false;
             });

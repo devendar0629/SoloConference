@@ -1,0 +1,50 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "start-frontend-server",
+            "type": "shell",
+            "command": "npm run dev",
+            "options": {
+                "cwd": "${workspaceFolder}/frontend"
+            },
+            "isBackground": true,
+        },
+        {
+            "label": "start-backend-server",
+            "type": "shell",
+            "command": "npm run dev",
+            "problemMatcher": [],
+            "options": {
+                "cwd": "${workspaceFolder}/backend"
+            },
+            "isBackground": true,
+        },
+        {
+            "label": "start-docker-compose-services",
+            "type": "shell",
+            "command": "docker compose up -d",
+            "problemMatcher": [],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "close": true
+            }
+        },
+        {
+            "label": "start-app-servers",
+            "dependsOn": [
+                "start-docker-compose-services",
+                "start-frontend-server",
+                "start-backend-server"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+        },
+    ]
+}

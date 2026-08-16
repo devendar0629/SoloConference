@@ -1,12 +1,12 @@
-import type { RequestHandler } from "express";
+import type { CookieOptions, RequestHandler } from "express";
 import { type LoginBody, type SignupBody } from "./auth.schema";
 import { db } from "../../db";
 import { UsersTable } from "../../db/schema";
 import argon2 from "argon2";
 import jsonwebtoken from "jsonwebtoken";
 import {
-    ACCESS_TOKEN_EXPIRY_SECONDS,
-    REFRESH_TOKEN_EXPIRY_SECONDS,
+    ACCESS_TOKEN_EXPIRY_MS,
+    REFRESH_TOKEN_EXPIRY_MS,
 } from "../../config/constants";
 
 export const login: RequestHandler<any, any, LoginBody, any> = async (
@@ -21,7 +21,7 @@ export const login: RequestHandler<any, any, LoginBody, any> = async (
 
     if (!user) {
         return res.status(400).json({
-            error: "INVALID_CREDENTIALS",
+            code: "INVALID_CREDENTIALS",
             message: "Invalid email or password",
         });
     }
@@ -29,11 +29,12 @@ export const login: RequestHandler<any, any, LoginBody, any> = async (
     const isCorrectPassword = await argon2.verify(user.password, password);
     if (!isCorrectPassword) {
         return res.status(400).json({
-            error: "INVALID_CREDENTIALS",
+            code: "INVALID_CREDENTIALS",
             message: "Invalid email or password",
         });
     }
 
+    // Generate access token
     const accessTokenPayload = {
         id: user.id,
     };
@@ -41,11 +42,12 @@ export const login: RequestHandler<any, any, LoginBody, any> = async (
         accessTokenPayload,
         process.env.ACCESS_TOKEN_SECRET as string,
         {
-            expiresIn: ACCESS_TOKEN_EXPIRY_SECONDS,
+            expiresIn: ACCESS_TOKEN_EXPIRY_MS,
             algorithm: "HS256",
         },
     );
 
+    // Generate refresh token
     const refreshTokenPayload = {
         id: user.id,
     };
@@ -53,24 +55,32 @@ export const login: RequestHandler<any, any, LoginBody, any> = async (
         refreshTokenPayload,
         process.env.REFRESH_TOKEN_SECRET as string,
         {
-            expiresIn: REFRESH_TOKEN_EXPIRY_SECONDS,
+            expiresIn: REFRESH_TOKEN_EXPIRY_MS,
             algorithm: "HS256",
         },
     );
 
+    const responsePayload = {
+        message: "Login successful",
+        data: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+        },
+        accessToken,
+    };
+
+    const refreshTokenCookieOptions: CookieOptions = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: REFRESH_TOKEN_EXPIRY_MS,
+    };
+
     return res
         .status(200)
-        .cookie("refresh_token", refreshToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "strict",
-            maxAge: REFRESH_TOKEN_EXPIRY_SECONDS,
-        })
-        .json({
-            message: "Login successful",
-            data: user,
-            accessToken,
-        });
+        .cookie("refresh_token", refreshToken, refreshTokenCookieOptions)
+        .json(responsePayload);
 };
 
 export const signup: RequestHandler<any, any, SignupBody, any> = async (
@@ -114,6 +124,7 @@ export const signup: RequestHandler<any, any, SignupBody, any> = async (
 };
 
 export const getAccessToken: RequestHandler = async (req, res) => {
+    // Generate new access token
     const accessTokenPayload = {
         id: req.user.id,
     };
@@ -121,11 +132,12 @@ export const getAccessToken: RequestHandler = async (req, res) => {
         accessTokenPayload,
         process.env.ACCESS_TOKEN_SECRET as string,
         {
-            expiresIn: ACCESS_TOKEN_EXPIRY_SECONDS,
+            expiresIn: ACCESS_TOKEN_EXPIRY_MS,
             algorithm: "HS256",
         },
     );
 
+    // Generate new refresh token
     const refreshTokenPayload = {
         id: req.user.id,
     };
@@ -133,21 +145,43 @@ export const getAccessToken: RequestHandler = async (req, res) => {
         refreshTokenPayload,
         process.env.REFRESH_TOKEN_SECRET as string,
         {
-            expiresIn: REFRESH_TOKEN_EXPIRY_SECONDS,
+            expiresIn: REFRESH_TOKEN_EXPIRY_MS,
             algorithm: "HS256",
         },
     );
 
+    const user = await db.query.UsersTable.findFirst({
+        where: (fields, operators) => operators.eq(fields.id, req.user.id),
+    });
+
+    if (!user) {
+        return res.status(404).json({
+            code: "USER_NOT_FOUND",
+            message: "User not found",
+        });
+    }
+
+    const responsePayload = {
+        message: "Success",
+        data: {
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+            },
+            accessToken,
+        },
+    };
+
+    const refreshTokenCookieOptions: CookieOptions = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: REFRESH_TOKEN_EXPIRY_MS,
+    };
+
     return res
         .status(200)
-        .cookie("refresh_token", refreshToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "strict",
-            maxAge: REFRESH_TOKEN_EXPIRY_SECONDS,
-        })
-        .json({
-            message: "Success",
-            data: accessToken,
-        });
+        .cookie("refresh_token", refreshToken, refreshTokenCookieOptions)
+        .json(responsePayload);
 };

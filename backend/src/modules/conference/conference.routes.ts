@@ -11,5 +11,7 @@ router.post(
     conferenceController.createConference,
 );
 router.get("/all", conferenceController.getAllConferences);
+router.get("/:conference_id", conferenceController.getConference);
+router.delete("/all", conferenceController.deleteAllConferences);
 
 export default router;

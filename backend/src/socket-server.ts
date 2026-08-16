@@ -1,5 +1,6 @@
-import { Server } from "socket.io";
+import { Server, type Socket } from "socket.io";
 import type { Server as HttpServer } from "http";
+import { registerConferenceHandlers } from "./modules/conference/socket/conference.socket";
 
 export const initSocketServer = (httpServer: HttpServer) => {
     const io = new Server(httpServer, {
@@ -15,6 +16,8 @@ export const initSocketServer = (httpServer: HttpServer) => {
         socket.on("disconnect", () => {
             console.log(`❌ Client disconnected: ${socket.id}`);
         });
+
+        registerConferenceHandlers(io, socket);
     });
 
     return io;

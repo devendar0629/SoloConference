@@ -1,16 +1,20 @@
 import { serverHost, serverPort } from "@/config/constants";
 import axios from "axios";
+import {} from "@/store/slices/useAuthSlice";
 
 const api = axios.create({
     baseURL: `http://${serverHost}:${serverPort}/api/v1`,
     withCredentials: true
 });
 
-let onTokenRefreshed: (token: string) => void = () => {};
+let onTokenRefreshed: (data: {
+    accessToken: string;
+    user: any;
+}) => void = () => {};
 let onAuthFailure: () => void = () => {};
 
 export const injectStoreCallbacks = (
-    onRefresh: (token: string) => void,
+    onRefresh: (data: { accessToken: string; user: any }) => void,
     onFailure: () => void
 ) => {
     onTokenRefreshed = onRefresh;
@@ -21,12 +25,22 @@ export const injectStoreCallbacks = (
 let cachedToken: string | null = null;
 let refreshPromise: Promise<string> | null = null;
 
+export const setAccessToken = (token: string | null) => {
+    cachedToken = token;
+};
+
+export const clearAccessToken = () => {
+    setAccessToken(null);
+};
+
 // 1. Request Interceptor: Apply token to outgoing fresh requests
 api.interceptors.request.use((config) => {
     const token = cachedToken;
+
     if (token && config.headers) {
         config.headers.set("Authorization", `Bearer ${token}`);
     }
+
     return config;
 });
 
@@ -53,13 +67,15 @@ api.interceptors.response.use(
                             { withCredentials: true }
                         )
                         .then((res) => {
-                            const newAccessToken = res.data.data;
-                            onTokenRefreshed(newAccessToken);
-                            cachedToken = newAccessToken;
-                            return newAccessToken;
+                            const responseData = res.data.data;
+
+                            setAccessToken(responseData.accessToken);
+                            onTokenRefreshed(responseData);
+
+                            return responseData.accessToken;
                         })
                         .finally(() => {
-                            refreshPromise = null; // Reset when done
+                            refreshPromise = null;
                         });
                 }
 

@@ -4,6 +4,10 @@ import LoginPage from "@/pages/auth/login-page";
 import SignupPage from "@/pages/auth/signup-page";
 import Protected from "@/components/auth/protected";
 import NotFound from "@/pages/misc/not-found";
+import AllConferences from "@/pages/conference/all";
+import Dashboard from "./dashboard";
+import Conference from "@/pages/conference/conference";
+import JoinConferenceById from "@/pages/conference/join-conference-by-id";
 
 export const router = createBrowserRouter([
     {
@@ -29,7 +33,19 @@ export const router = createBrowserRouter([
                     },
                     {
                         path: "/dashboard",
-                        Component: () => "Dashboard"
+                        Component: Dashboard
+                    },
+                    {
+                        path: "/conferences",
+                        Component: AllConferences
+                    },
+                    {
+                        path: "/conference/:conference_id",
+                        Component: Conference
+                    },
+                    {
+                        path: "/conference/join/:conference_id",
+                        Component: JoinConferenceById
                     }
                 ]
             },

@@ -1,37 +1,51 @@
 import { useEffect } from "react";
 import { Outlet } from "react-router";
-import api, { injectStoreCallbacks } from "@/lib/api";
+import api, {
+    clearAccessToken,
+    injectStoreCallbacks,
+    setAccessToken
+} from "@/lib/api";
 import { fetchCurrentUser } from "@/api/user";
 import { Toaster } from "@/components/ui/sonner";
 import { useStore } from "@/store";
 
 export default function RootLayout() {
-    const { login, logout } = useStore((state) => state.auth);
+    const { login: storeLogin, logout: storeLogout } = useStore(
+        (state) => state.auth
+    );
 
     useEffect(() => {
-        const onRefresh = (token: string) => {
-            api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+        const onRefresh = (data: { accessToken: string; user: any }) => {
+            setAccessToken(data.accessToken);
+            api.defaults.headers.common["Authorization"] =
+                `Bearer ${data.accessToken}`;
+            storeLogin(data.user);
         };
 
         const onFailure = () => {
-            logout();
+            clearAccessToken();
+            storeLogout();
         };
 
         injectStoreCallbacks(onRefresh, onFailure);
 
         const checkAuthStatus = async () => {
+            console.log("Checking auth status ...");
+
             try {
                 const user = await fetchCurrentUser();
 
-                login(user);
+                console.log("Fetched user: ", user);
+
+                storeLogin(user);
             } catch (error) {
                 console.error("Error fetching current user:", error);
-                logout();
+                storeLogout();
             }
         };
 
         checkAuthStatus();
-    }, [login, logout]);
+    }, [storeLogin, storeLogout]);
 
     return (
         <>

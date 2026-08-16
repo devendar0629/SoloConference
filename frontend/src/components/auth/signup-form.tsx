@@ -19,6 +19,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { signupFormSchema, type SignupFormData } from "@/schemas/signup";
 import { useSignupMutation } from "@/api/login";
 import { toast } from "sonner";
+import { AxiosError } from "axios";
 
 export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
     const navigate = useNavigate();
@@ -38,8 +39,23 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
     const handleSubmit: SubmitHandler<SignupFormData> = async (data) => {
         await signupMutation.mutateAsync(data, {
             onError: (error) => {
-                console.error("Signup error:", error);
-                toast.error("Signup failed. Please try again.");
+                if (error instanceof AxiosError) {
+                    if (error.response?.data?.code === "EMAIL_ALREADY_EXISTS") {
+                        form.setError("email", {
+                            type: "manual",
+                            message:
+                                "Email already exists. Please use a different email."
+                        });
+
+                        return;
+                    }
+                }
+
+                form.setError("root", {
+                    type: "manual",
+                    message:
+                        "An unexpected error occurred. Please try again later."
+                });
             },
             onSuccess: () => {
                 toast.success("Signup successful! Please log in.");
@@ -179,6 +195,10 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                                 );
                             }}
                         />
+
+                        {form.formState.errors.root?.message && (
+                            <FieldError errors={[form.formState.errors.root]} />
+                        )}
 
                         <Button
                             className="py-4.5 px-3 mt-4 text-base font-semibold cursor-pointer"
