@@ -73,7 +73,7 @@ export const login: RequestHandler<any, any, LoginBody, any> = async (
     const refreshTokenCookieOptions: CookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
+        sameSite: "lax",
         maxAge: REFRESH_TOKEN_EXPIRY_MS,
     };
 
@@ -176,7 +176,7 @@ export const getAccessToken: RequestHandler = async (req, res) => {
     const refreshTokenCookieOptions: CookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
+        sameSite: "lax",
         maxAge: REFRESH_TOKEN_EXPIRY_MS,
     };
 
