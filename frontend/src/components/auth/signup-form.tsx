@@ -20,13 +20,14 @@ import { signupFormSchema, type SignupFormData } from "@/schemas/signup";
 import { useSignupMutation } from "@/api/login";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
+import { Loader2Icon } from "lucide-react";
 
 export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
     const navigate = useNavigate();
 
     const signupMutation = useSignupMutation();
 
-    const form = useForm({
+    const signupForm = useForm({
         resolver: zodResolver(signupFormSchema),
         defaultValues: {
             name: "",
@@ -41,7 +42,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
             onError: (error) => {
                 if (error instanceof AxiosError) {
                     if (error.response?.data?.code === "EMAIL_ALREADY_EXISTS") {
-                        form.setError("email", {
+                        signupForm.setError("email", {
                             type: "manual",
                             message:
                                 "Email already exists. Please use a different email."
@@ -51,7 +52,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                     }
                 }
 
-                form.setError("root", {
+                signupForm.setError("root", {
                     type: "manual",
                     message:
                         "An unexpected error occurred. Please try again later."
@@ -75,11 +76,11 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
             </CardHeader>
 
             <CardContent>
-                <form onSubmit={form.handleSubmit(handleSubmit)}>
+                <form onSubmit={signupForm.handleSubmit(handleSubmit)}>
                     <FieldGroup className="gap-3">
                         <Controller
                             name="name"
-                            control={form.control}
+                            control={signupForm.control}
                             render={({ field, fieldState }) => {
                                 return (
                                     <Field
@@ -108,7 +109,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
 
                         <Controller
                             name="email"
-                            control={form.control}
+                            control={signupForm.control}
                             render={({ field, fieldState }) => {
                                 return (
                                     <Field
@@ -138,7 +139,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
 
                         <Controller
                             name="password"
-                            control={form.control}
+                            control={signupForm.control}
                             render={({ field, fieldState }) => {
                                 return (
                                     <Field
@@ -168,7 +169,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
 
                         <Controller
                             name="confirmPassword"
-                            control={form.control}
+                            control={signupForm.control}
                             render={({ field, fieldState }) => {
                                 return (
                                     <Field
@@ -196,15 +197,21 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                             }}
                         />
 
-                        {form.formState.errors.root?.message && (
-                            <FieldError errors={[form.formState.errors.root]} />
+                        {signupForm.formState.errors.root?.message && (
+                            <FieldError
+                                errors={[signupForm.formState.errors.root]}
+                            />
                         )}
 
                         <Button
+                            disabled={signupMutation.isPending}
                             className="py-4.5 px-3 mt-4 text-base font-semibold cursor-pointer"
                             type="submit"
                         >
                             Create Account
+                            {signupMutation.isPending && (
+                                <Loader2Icon className="animate-spin" />
+                            )}
                         </Button>
                     </FieldGroup>
                 </form>

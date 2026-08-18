@@ -20,6 +20,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { loginFormSchema, type LoginFormData } from "@/schemas/login";
 import { useLoginMutation } from "@/api/login";
 import { AxiosError } from "axios";
+import { Loader2Icon } from "lucide-react";
 
 export default function LoginForm({
     className,
@@ -27,7 +28,7 @@ export default function LoginForm({
 }: React.ComponentProps<"div">) {
     const loginMutation = useLoginMutation();
 
-    const form = useForm({
+    const loginForm = useForm({
         resolver: zodResolver(loginFormSchema),
         defaultValues: {
             email: "",
@@ -42,7 +43,7 @@ export default function LoginForm({
                     error instanceof AxiosError &&
                     error.response?.data?.code === "INVALID_CREDENTIALS"
                 ) {
-                    form.setError("root", {
+                    loginForm.setError("root", {
                         message:
                             "Invalid credentials. Please check your email and password."
                     });
@@ -50,7 +51,7 @@ export default function LoginForm({
                     return;
                 }
 
-                form.setError("root", {
+                loginForm.setError("root", {
                     message:
                         "An unexpected error occurred. Please try again later."
                 });
@@ -72,11 +73,11 @@ export default function LoginForm({
                 </CardHeader>
 
                 <CardContent>
-                    <form onSubmit={form.handleSubmit(handleSubmit)}>
+                    <form onSubmit={loginForm.handleSubmit(handleSubmit)}>
                         <FieldGroup>
                             <Controller
                                 name="email"
-                                control={form.control}
+                                control={loginForm.control}
                                 render={({ field, fieldState }) => {
                                     return (
                                         <Field
@@ -108,7 +109,7 @@ export default function LoginForm({
 
                             <Controller
                                 name="password"
-                                control={form.control}
+                                control={loginForm.control}
                                 render={({ field, fieldState }) => {
                                     return (
                                         <Field
@@ -138,17 +139,21 @@ export default function LoginForm({
                                 }}
                             />
 
-                            {form.formState.errors.root?.message && (
+                            {loginForm.formState.errors.root?.message && (
                                 <FieldError
-                                    errors={[form.formState.errors.root]}
+                                    errors={[loginForm.formState.errors.root]}
                                 />
                             )}
 
                             <Button
+                                disabled={loginMutation.isPending}
                                 className="py-4.5 px-3 mt-1 text-base font-semibold cursor-pointer"
                                 type="submit"
                             >
                                 Login
+                                {loginMutation.isPending && (
+                                    <Loader2Icon className="animate-spin" />
+                                )}
                             </Button>
                         </FieldGroup>
                     </form>
