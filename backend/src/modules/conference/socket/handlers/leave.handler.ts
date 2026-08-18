@@ -12,7 +12,5 @@ export const handleConferenceLeave = (socket: Socket, data: LeaveData) => {
 
     socket.leave(conferenceId);
 
-    socket.to(conferenceId).emit("conference:user-left", {
-        socket_id: socket.id,
-    });
+    socket.to(conferenceId).emit("conference:user-left");
 };

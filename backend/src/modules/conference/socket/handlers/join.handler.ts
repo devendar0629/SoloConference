@@ -50,6 +50,5 @@ export const handleConferenceJoin = (
 
     socket.broadcast.to(conferenceId).emit("conference:new-user-joined", {
         conference_id: conferenceId,
-        socket_id: socket.id,
     });
 };
