@@ -1,5 +1,5 @@
 import type { Socket } from "socket.io";
-import type { LeaveData } from "../validation-schemas/leave.schema";
+import type { LeaveData } from "../validation-schemas/leave.schema.js";
 
 export const handleConferenceLeave = (socket: Socket, data: LeaveData) => {
     const conferenceId = data?.conference_id;

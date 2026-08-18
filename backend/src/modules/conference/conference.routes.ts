@@ -1,7 +1,7 @@
 import { Router } from "express";
-import * as conferenceController from "./conference.controller";
-import { validateBody } from "../../middleware/validate.middleware";
-import * as conferenceSchemas from "./conference.schema";
+import * as conferenceController from "./conference.controller.js";
+import { validateBody } from "../../middleware/validate.middleware.js";
+import * as conferenceSchemas from "./conference.schema.js";
 
 const router = Router();
 

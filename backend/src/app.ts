@@ -13,14 +13,14 @@ app.use(
     }),
 );
 
-import { jwtMiddleware } from "./middleware/jwt.middleware";
-import { ensureUserIsAuthenticated } from "./middleware/auth.middleware";
+import { jwtMiddleware } from "./middleware/jwt.middleware.js";
+import { ensureUserIsAuthenticated } from "./middleware/auth.middleware.js";
 
 app.use(jwtMiddleware);
 
-import userRouter from "./modules/user/user.routes";
-import authRouter from "./modules/auth/auth.routes";
-import conferenceRouter from "./modules/conference/conference.routes";
+import userRouter from "./modules/user/user.routes.js";
+import authRouter from "./modules/auth/auth.routes.js";
+import conferenceRouter from "./modules/conference/conference.routes.js";
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", ensureUserIsAuthenticated, userRouter);

@@ -1,2 +1,2 @@
-export * from "./user.ts";
-export * from "./conference.ts";
+export * from "./user.js";
+export * from "./conference.js";

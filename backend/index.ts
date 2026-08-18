@@ -1,6 +1,6 @@
-import { server } from "./src/server";
-import { db } from "./src/db";
-import { initSocketServer } from "./src/socket-server";
+import { server } from "./src/server.js";
+import { db } from "./src/db/index.js";
+import { initSocketServer } from "./src/socket-server.js";
 
 const SERVER_PORT = parseInt(process.env.SERVER_PORT ?? "3000") || 3000;
 const SERVER_HOST = process.env.SERVER_HOST ?? "localhost";

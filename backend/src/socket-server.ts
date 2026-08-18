@@ -1,6 +1,6 @@
-import { Server, type Socket } from "socket.io";
+import { Server } from "socket.io";
 import type { Server as HttpServer } from "http";
-import { registerConferenceHandlers } from "./modules/conference/socket/conference.socket";
+import { registerConferenceHandlers } from "./modules/conference/socket/conference.socket.js";
 
 export const initSocketServer = (httpServer: HttpServer) => {
     const io = new Server(httpServer, {

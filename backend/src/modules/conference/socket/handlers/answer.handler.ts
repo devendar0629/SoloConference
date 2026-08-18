@@ -1,5 +1,5 @@
 import type { Socket } from "socket.io";
-import type { AnswerData } from "../validation-schemas/answer.schema";
+import type { AnswerData } from "../validation-schemas/answer.schema.js";
 
 export const handleConferenceAnswer = (socket: Socket, data: AnswerData) => {
     const conferenceId = data.conference_id;

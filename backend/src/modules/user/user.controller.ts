@@ -1,5 +1,5 @@
 import type { RequestHandler } from "express";
-import { db } from "../../db";
+import { db } from "../../db/index.js";
 
 export const getCurrentUser: RequestHandler = async (req, res) => {
     try {

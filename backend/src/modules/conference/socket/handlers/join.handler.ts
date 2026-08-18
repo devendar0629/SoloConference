@@ -1,5 +1,5 @@
 import type { Server, Socket } from "socket.io";
-import type { JoinData } from "../validation-schemas/join.schema";
+import type { JoinData } from "../validation-schemas/join.schema.js";
 
 export const handleConferenceJoin = (
     io: Server,

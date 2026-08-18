@@ -1,13 +1,13 @@
 import type { CookieOptions, RequestHandler } from "express";
-import { type LoginBody, type SignupBody } from "./auth.schema";
-import { db } from "../../db";
-import { UsersTable } from "../../db/schema";
+import { type LoginBody, type SignupBody } from "./auth.schema.js";
+import { db } from "../../db/index.js";
+import { UsersTable } from "../../db/schema/index.js";
 import argon2 from "argon2";
 import jsonwebtoken from "jsonwebtoken";
 import {
     ACCESS_TOKEN_EXPIRY_MS,
     REFRESH_TOKEN_EXPIRY_MS,
-} from "../../config/constants";
+} from "../../config/constants.js";
 
 export const login: RequestHandler<any, any, LoginBody, any> = async (
     req,

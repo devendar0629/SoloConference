@@ -1,7 +1,7 @@
 import type { RequestHandler } from "express";
-import { db } from "../../db";
-import { ConferenceTable } from "../../db/schema";
-import type { CreateConferenceBody } from "./conference.schema";
+import { db } from "../../db/index.js";
+import { ConferenceTable } from "../../db/schema/index.js";
+import type { CreateConferenceBody } from "./conference.schema.js";
 import { eq } from "drizzle-orm";
 
 export const createConference: RequestHandler<
@@ -16,7 +16,7 @@ export const createConference: RequestHandler<
         const [newConference] = await db
             .insert(ConferenceTable)
             .values({
-                owner: req.user?.id,
+                owner: req.user.id,
                 title,
             })
             .returning({
@@ -43,7 +43,7 @@ export const createConference: RequestHandler<
 };
 
 export const getAllConferences: RequestHandler = async (req, res) => {
-    const userId = req.user?.id;
+    const userId = req.user.id;
 
     try {
         const conferences = await db.query.ConferenceTable.findMany({
@@ -90,7 +90,7 @@ export const getConference: RequestHandler = async (req, res) => {
 };
 
 export const deleteAllConferences: RequestHandler = async (req, res) => {
-    const userId = req.user?.id;
+    const userId = req.user.id;
 
     try {
         await db

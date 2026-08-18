@@ -1,5 +1,5 @@
 import type { Socket } from "socket.io";
-import type { IceCandidateData } from "../validation-schemas/ice-candidate.schema";
+import type { IceCandidateData } from "../validation-schemas/ice-candidate.schema.js";
 
 export const handleConferenceIceCandidate = (
     socket: Socket,

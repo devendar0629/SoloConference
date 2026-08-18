@@ -1,5 +1,6 @@
 import type { RequestHandler } from "express";
 import jsonwebtoken from "jsonwebtoken";
+import type { UserFromToken } from "../../types/express/index.js";
 
 export const ensureRefreshToken: RequestHandler = async (req, res, next) => {
     let refreshToken = req.cookies.refresh_token;
@@ -14,7 +15,7 @@ export const ensureRefreshToken: RequestHandler = async (req, res, next) => {
             process.env.REFRESH_TOKEN_SECRET as string,
         );
 
-        req.user = decodedRefreshToken;
+        req.user = decodedRefreshToken as UserFromToken;
     } catch (error) {
         console.error("Error verifying refresh token:", error);
 

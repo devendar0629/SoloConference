@@ -1,5 +1,5 @@
 import type { Server, Socket } from "socket.io";
-import conferenceHandlers from "./handlers";
+import conferenceHandlers from "./handlers/index.js";
 
 export const leaveConferenceRoom = (socket: Socket, conferenceId: string) => {
     if (!conferenceId || !socket.rooms.has(conferenceId)) {

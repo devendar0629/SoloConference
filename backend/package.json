@@ -7,7 +7,9 @@
     "dev": "tsx watch --env-file=.env.local index.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "drizzle-kit-studio": "drizzle-kit studio"
+    "drizzle-kit-studio": "drizzle-kit studio",
+    "build": "tsc",
+    "start": "node --env-file=.env.local dist/index.js"
   },
   "devDependencies": {
     "@types/bun": "latest",

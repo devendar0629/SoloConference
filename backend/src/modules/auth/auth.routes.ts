@@ -1,8 +1,8 @@
 import { Router } from "express";
-import * as authController from "./auth.controller";
-import * as authSchemas from "./auth.schema";
-import { ensureRefreshToken } from "./auth.middleware";
-import { validateBody } from "../../middleware/validate.middleware";
+import * as authController from "./auth.controller.js";
+import * as authSchemas from "./auth.schema.js";
+import { ensureRefreshToken } from "./auth.middleware.js";
+import { validateBody } from "../../middleware/validate.middleware.js";
 
 const authRouter = Router();
 
