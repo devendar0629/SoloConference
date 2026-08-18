@@ -232,14 +232,6 @@ export default function ConferencePage() {
                 }
 
                 case "conference:new-user-joined": {
-                    if (
-                        payload.socket_id &&
-                        socket?.id &&
-                        payload.socket_id === socket.id
-                    ) {
-                        break;
-                    }
-
                     const offer = await createOffer();
 
                     if (offer) {
@@ -312,7 +304,6 @@ export default function ConferencePage() {
     );
 
     const {
-        socket,
         connect: connectSocket,
         disconnect: disconnectSocket,
         emitEvent,
@@ -329,7 +320,7 @@ export default function ConferencePage() {
     useEffect(() => {
         if (joinError) {
             stopUserMedia();
-            disconnect();
+            disconnectSocket();
         }
     }, [joinError, stopUserMedia, disconnectSocket]);
 

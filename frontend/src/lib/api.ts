@@ -1,9 +1,10 @@
-import { serverHost, serverPort } from "@/config/constants";
+import { serverHost, serverPort, isDevelopment } from "@/config/constants";
 import axios from "axios";
-import {} from "@/store/slices/useAuthSlice";
+
+const protocol = isDevelopment ? "http" : "https";
 
 const api = axios.create({
-    baseURL: `http://${serverHost}:${serverPort}/api/v1`,
+    baseURL: `${protocol}://${serverHost}:${serverPort}/api/v1`,
     withCredentials: true
 });
 

@@ -1,4 +1,4 @@
-import { serverHost, serverPort } from "@/config/constants";
+import { isDevelopment, serverHost, serverPort } from "@/config/constants";
 import { useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 
@@ -31,7 +31,9 @@ export const useSocket = ({ onConnect, onEvent }: useSocketParams = {}) => {
     };
 
     const connect = () => {
-        const _socket = io(`ws://${serverHost}:${serverPort}`, {
+        const protocol = isDevelopment ? "ws" : "wss";
+
+        const _socket = io(`${protocol}://${serverHost}:${serverPort}`, {
             withCredentials: true
         });
 
