@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "tsx watch --env-file=.env.local index.ts",
+    "dev": "tsx watch --env-file=.env index.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "drizzle-kit-studio": "drizzle-kit studio",

@@ -6,6 +6,7 @@ import argon2 from "argon2";
 import jsonwebtoken from "jsonwebtoken";
 import {
     ACCESS_TOKEN_EXPIRY_MS,
+    IS_DEVELOPMENT,
     REFRESH_TOKEN_EXPIRY_MS,
 } from "../../config/constants.js";
 
@@ -72,8 +73,8 @@ export const login: RequestHandler<any, any, LoginBody, any> = async (
 
     const refreshTokenCookieOptions: CookieOptions = {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "none",
+        secure: IS_DEVELOPMENT,
+        sameSite: IS_DEVELOPMENT ? "none" : "lax",
         maxAge: REFRESH_TOKEN_EXPIRY_MS,
         path: "/api/v1/auth/refresh-token",
     };
@@ -176,8 +177,8 @@ export const getAccessToken: RequestHandler = async (req, res) => {
 
     const refreshTokenCookieOptions: CookieOptions = {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "none",
+        secure: IS_DEVELOPMENT,
+        sameSite: IS_DEVELOPMENT ? "none" : "lax",
         maxAge: REFRESH_TOKEN_EXPIRY_MS,
         path: "/api/v1/auth/refresh-token",
     };

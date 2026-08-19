@@ -11,6 +11,31 @@ services:
     networks:
       - soloconference_network
 
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    networks:
+      - soloconference_network
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend
+      secrets:
+        - frontend_env_file
+    ports:
+      - "5173:80"
+    volumes:
+      - ./frontend/config/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - soloconference_network
+    depends_on:
+      - backend
 
 networks:
   soloconference_network:
@@ -18,3 +43,7 @@ networks:
 
 volumes:
   soloconference_db_data:
+
+secrets:
+  frontend_env_file:
+    file: ./frontend/.env.local
