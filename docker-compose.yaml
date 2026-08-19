@@ -12,6 +12,7 @@ services:
       - soloconference_network
 
   backend:
+    image: soloconference_backend:latest
     build:
       context: ./backend
     ports:
@@ -24,6 +25,7 @@ services:
       - db
 
   frontend:
+    image: soloconference_frontend:latest
     build:
       context: ./frontend
       secrets:
