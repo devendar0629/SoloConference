@@ -317,28 +317,22 @@ export default function AllConferences() {
 
                 {/* Empty State */}
                 {!isPending && !isError && conferences.length === 0 && (
-                    <Card className="mx-auto max-w-md border-zinc-800/80 bg-zinc-900/40 text-center p-8 backdrop-blur-sm">
-                        <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-zinc-800/80 text-zinc-400">
-                            <Video className="size-6" />
-                        </div>
+                    <Card className="mx-auto max-w-md border-zinc-800/80 bg-zinc-900/40 p-8 text-center backdrop-blur-sm">
                         <CardHeader className="p-0">
-                            <CardTitle className="text-xl text-zinc-100">
-                                No conferences found
-                            </CardTitle>
-                            <CardDescription className="mt-1 text-zinc-400">
-                                You haven't hosted or joined any conference
-                                spaces yet.
-                            </CardDescription>
+                            <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-zinc-800/80 text-zinc-400">
+                                <Video className="size-6" />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <CardTitle className="text-xl font-semibold tracking-tight text-zinc-100">
+                                    No conferences found
+                                </CardTitle>
+                                <CardDescription className="text-sm text-zinc-400">
+                                    You haven't hosted any conference spaces
+                                    yet.
+                                </CardDescription>
+                            </div>
                         </CardHeader>
-                        <CardFooter className="mt-6 justify-center p-0">
-                            <Link
-                                to="/dashboard"
-                                className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-indigo-500 active:scale-95"
-                            >
-                                <Plus className="size-4" />
-                                Create your first room
-                            </Link>
-                        </CardFooter>
                     </Card>
                 )}
 

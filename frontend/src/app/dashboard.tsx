@@ -22,6 +22,14 @@ import {
     FieldGroup,
     FieldLabel
 } from "@/components/ui/field";
+import {
+    Popover,
+    PopoverContent,
+    PopoverDescription,
+    PopoverHeader,
+    PopoverTitle,
+    PopoverTrigger
+} from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useMutation } from "@tanstack/react-query";
@@ -31,6 +39,8 @@ import {
     joinConferenceFormSchema,
     type JoinConferenceFormData
 } from "@/schemas/join-conference";
+import { toast } from "sonner";
+import { logoutUser } from "@/api/auth";
 
 type GenerateMeetingLinkAPIResponse = {
     meetingCode: string;
@@ -211,6 +221,61 @@ const JoinConferenceForm: React.FC = () => {
     );
 };
 
+const UserProfilePopover: React.FC = () => {
+    const { user, logout: storeLogout } = useStore((state) => state.auth);
+    const navigate = useNavigate();
+
+    const handleLogout = async () => {
+        try {
+            await logoutUser();
+            storeLogout();
+
+            navigate("/login");
+        } catch {
+            toast.error("Failed to log out. Please try again.");
+            return;
+        }
+    };
+
+    return (
+        <Popover>
+            <PopoverTrigger
+                render={
+                    <img
+                        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || "User")}&background=312e81&color=c7d2fe`}
+                        alt={user?.name || "User avatar"}
+                        className="h-full w-full object-cover cursor-pointer"
+                    />
+                }
+            />
+
+            <PopoverContent className="w-64">
+                <PopoverHeader>
+                    <PopoverTitle className="text-lg font-semibold">
+                        {user?.name || "User Account"}
+                    </PopoverTitle>
+
+                    <PopoverDescription className="text-sm text-gray-500 truncate">
+                        {user?.email || "No email available"}
+                    </PopoverDescription>
+                </PopoverHeader>
+
+                <div className="border-t border-gray-200 pt-4">
+                    <Button
+                        className="cursor-pointer"
+                        variant={"destructive"}
+                        type="button"
+                        size="lg"
+                        onClick={handleLogout}
+                    >
+                        Log out
+                    </Button>
+                </div>
+            </PopoverContent>
+        </Popover>
+    );
+};
+
 export default function SoloConferenceDashboard() {
     const { user } = useStore((state) => state.auth);
 
@@ -227,19 +292,8 @@ export default function SoloConferenceDashboard() {
                     </span>
                 </div>
 
-                <div className="flex items-center gap-4">
-                    <button className="relative rounded-full p-2 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-50">
-                        <Bell size={20} />
-                        <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-indigo-500 ring-2 ring-zinc-950"></span>
-                    </button>
-
-                    <div className="h-8 w-8 overflow-hidden rounded-full border-2 border-zinc-800">
-                        {/* <img
-                            src="https://ui-avatars.com/api/?name=Alex+Doe&background=312e81&color=c7d2fe"
-                            alt="User avatar"
-                            className="h-full w-full object-cover"
-                        /> */}
-                    </div>
+                <div className="size-8 overflow-hidden rounded-full border border-slate-400">
+                    <UserProfilePopover />
                 </div>
             </header>
 

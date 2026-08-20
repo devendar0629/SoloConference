@@ -76,7 +76,7 @@ export const login: RequestHandler<any, any, LoginBody, any> = async (
         secure: IS_DEVELOPMENT,
         sameSite: IS_DEVELOPMENT ? "none" : "lax",
         maxAge: REFRESH_TOKEN_EXPIRY_MS,
-        path: "/api/v1/auth/refresh-token",
+        path: "/api/v1/auth",
     };
 
     return res
@@ -180,11 +180,26 @@ export const getAccessToken: RequestHandler = async (req, res) => {
         secure: IS_DEVELOPMENT,
         sameSite: IS_DEVELOPMENT ? "none" : "lax",
         maxAge: REFRESH_TOKEN_EXPIRY_MS,
-        path: "/api/v1/auth/refresh-token",
+        path: "/api/v1/auth",
     };
 
     return res
         .status(200)
         .cookie("refresh_token", refreshToken, refreshTokenCookieOptions)
         .json(responsePayload);
+};
+
+export const logout: RequestHandler = async (req, res) => {
+    const refreshTokenCookieOptions: CookieOptions = {
+        httpOnly: true,
+        secure: IS_DEVELOPMENT,
+        sameSite: IS_DEVELOPMENT ? "none" : "lax",
+        maxAge: 0,
+        path: "/api/v1/auth",
+    };
+
+    return res
+        .status(200)
+        .clearCookie("refresh_token", refreshTokenCookieOptions)
+        .json({ message: "Successfully logged out" });
 };

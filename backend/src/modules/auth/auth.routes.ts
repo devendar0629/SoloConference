@@ -18,6 +18,8 @@ authRouter.post(
     authController.signup,
 );
 
+authRouter.post("/logout", ensureRefreshToken, authController.logout);
+
 authRouter.post(
     "/refresh-token",
     ensureRefreshToken,

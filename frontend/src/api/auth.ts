@@ -5,3 +5,7 @@ export const fetchCurrentUser = async () => {
         return res.data;
     });
 };
+
+export const logoutUser = async () => {
+    return api.post("/auth/logout");
+};
