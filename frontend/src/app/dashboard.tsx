@@ -1,4 +1,4 @@
-import { Video, Keyboard, Bell, Users, Loader2Icon } from "lucide-react";
+import { Video, Keyboard, Users, Loader2Icon } from "lucide-react";
 import { Link, useNavigate } from "react-router";
 import { useStore } from "@/store";
 import { Controller, useForm, type SubmitHandler } from "react-hook-form";

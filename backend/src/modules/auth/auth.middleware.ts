@@ -5,9 +5,6 @@ import type { UserFromToken } from "../../types/express/index.js";
 export const ensureRefreshToken: RequestHandler = async (req, res, next) => {
     let refreshToken = req.cookies.refresh_token;
 
-    console.log("Headers:", req.headers);
-    console.log("Cookies:", req.cookies);
-
     if (!refreshToken) {
         return res.status(401).json({ message: "Unauthorized" });
     }
