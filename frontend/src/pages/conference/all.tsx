@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import {
     ArrowLeft,
     CalendarDays,
@@ -9,16 +9,10 @@ import {
     ExternalLink,
     Video,
     Clock,
-    Plus,
-    RefreshCw,
-    Loader2Icon
+    RefreshCw
 } from "lucide-react";
-import { Link, useNavigate } from "react-router";
-import {
-    createConference,
-    getAllConferences,
-    type Conference
-} from "@/api/conference";
+import { Link } from "react-router";
+import { getAllConferences, type Conference } from "@/api/conference";
 import {
     Card,
     CardContent,
@@ -28,35 +22,7 @@ import {
     CardTitle
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger
-} from "@/components/ui/dialog";
-import {
-    Field,
-    FieldError,
-    FieldGroup,
-    FieldLabel
-} from "@/components/ui/field";
-import { Controller, useForm, type SubmitHandler } from "react-hook-form";
-import { Input } from "@/components/ui/input";
-import {
-    generateMeetingLinkFormSchema,
-    type GenerateMeetingLinkFormData
-} from "@/schemas/generate-meeting-link";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { formatDate } from "@/utils";
-import { toast } from "sonner";
-
-type GenerateMeetingLinkAPIResponse = {
-    meetingCode: string;
-};
 
 // Copy to Clipboard Button Component with state feedback
 function CopyCodeButton({ code }: { code: string }) {
@@ -92,130 +58,6 @@ function CopyCodeButton({ code }: { code: string }) {
     );
 }
 
-const NewRoomButton = () => {
-    const navigate = useNavigate();
-
-    const generateMeetingLinkForm = useForm<GenerateMeetingLinkFormData>({
-        defaultValues: {
-            title: ""
-        },
-        resolver: zodResolver(generateMeetingLinkFormSchema)
-    });
-
-    const {
-        mutateAsync: generateMeetingLinkMutation,
-        isPending: isGeneratingMeetingLink
-    } = useMutation<
-        GenerateMeetingLinkAPIResponse,
-        unknown,
-        GenerateMeetingLinkFormData
-    >({
-        mutationKey: ["conference", "generate-meeting-link"],
-        mutationFn: createConference
-    });
-
-    const handleGenerateMeetingLink: SubmitHandler<
-        GenerateMeetingLinkFormData
-    > = async (data) => {
-        try {
-            const response = await generateMeetingLinkMutation(data);
-
-            if (response?.meetingCode) {
-                navigate(`/conference/${response.meetingCode}`);
-
-                toast.success("Meeting link generated successfully!", {
-                    description: `Your meeting link is ready. You can now join the conference room.`,
-                    duration: 4000
-                });
-            }
-        } catch (error) {
-            console.error("Error generating meeting link:", error);
-            toast.error("Failed to generate meeting link.");
-        }
-    };
-
-    return (
-        <Dialog>
-            <DialogTrigger
-                render={
-                    <Button className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 pl-3 pr-3.25 h-9 py-2 text-sm font-medium text-white shadow-lg shadow-indigo-600/20 transition-all hover:bg-indigo-500 hover:shadow-indigo-500/25 active:scale-95">
-                        <Plus className="size-4" />
-                        <span className="hidden sm:inline">New Room</span>
-                    </Button>
-                }
-            />
-
-            <DialogContent className="sm:max-w-sm">
-                <form
-                    onSubmit={generateMeetingLinkForm.handleSubmit(
-                        handleGenerateMeetingLink
-                    )}
-                    className="space-y-5"
-                >
-                    <DialogHeader>
-                        <DialogTitle>Generate Meeting Link</DialogTitle>
-
-                        <DialogDescription>
-                            Give your meeting a title and generate a link.
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    <FieldGroup>
-                        <Controller
-                            name="title"
-                            control={generateMeetingLinkForm.control}
-                            render={({ field, fieldState }) => {
-                                return (
-                                    <Field
-                                        data-invalid={fieldState.invalid}
-                                        className="gap-2"
-                                    >
-                                        <FieldLabel htmlFor={field.name}>
-                                            Title
-                                        </FieldLabel>
-
-                                        <Input
-                                            aria-invalid={fieldState.invalid}
-                                            {...field}
-                                            className="max-w-xl py-4.5 px-3"
-                                        />
-
-                                        {fieldState.invalid && (
-                                            <FieldError
-                                                errors={[fieldState.error]}
-                                            />
-                                        )}
-                                    </Field>
-                                );
-                            }}
-                        />
-                    </FieldGroup>
-
-                    <DialogFooter>
-                        <DialogClose
-                            render={
-                                <Button type="button" variant="outline">
-                                    Cancel
-                                </Button>
-                            }
-                        />
-
-                        <Button
-                            disabled={isGeneratingMeetingLink}
-                            type="submit"
-                        >
-                            Generate
-                            {isGeneratingMeetingLink && (
-                                <Loader2Icon className="animate-spin" />
-                            )}
-                        </Button>
-                    </DialogFooter>
-                </form>
-            </DialogContent>
-        </Dialog>
-    );
-};
-
 export default function AllConferences() {
     const {
         data: conferences = [],
@@ -240,14 +82,17 @@ export default function AllConferences() {
                             <ArrowLeft className="size-3.5" />
                             Back to dashboard
                         </Link>
+
                         <div className="flex items-center gap-3">
                             <div className="flex size-10 items-center justify-center rounded-xl bg-linear-to-br from-indigo-500/20 to-purple-500/20 text-indigo-400 ring-1 ring-indigo-500/30">
                                 <Sparkles className="size-5" />
                             </div>
+
                             <div>
                                 <h1 className="text-xl font-semibold tracking-tight text-zinc-50 sm:text-2xl">
                                     Your Conferences
                                 </h1>
+
                                 <p className="text-xs text-zinc-400 sm:text-sm">
                                     Manage, review, and quickly jump back into
                                     your meeting spaces.
@@ -255,8 +100,6 @@ export default function AllConferences() {
                             </div>
                         </div>
                     </div>
-
-                    <NewRoomButton />
                 </div>
             </header>
 
@@ -275,11 +118,13 @@ export default function AllConferences() {
                                         <div className="h-5 w-20 animate-pulse rounded-full bg-zinc-800" />
                                         <div className="h-6 w-24 animate-pulse rounded-md bg-zinc-800" />
                                     </div>
+
                                     <div className="space-y-2">
                                         <div className="h-6 w-3/4 animate-pulse rounded bg-zinc-800" />
                                         <div className="h-4 w-full animate-pulse rounded bg-zinc-800/60" />
                                     </div>
                                 </div>
+
                                 <div className="mt-8 space-y-3 pt-4 border-t border-zinc-800/40">
                                     <div className="h-4 w-1/2 animate-pulse rounded bg-zinc-800/50" />
                                     <div className="h-9 w-full animate-pulse rounded-lg bg-zinc-800" />
@@ -296,12 +141,14 @@ export default function AllConferences() {
                             <CardTitle className="text-lg text-red-200">
                                 Failed to load conferences
                             </CardTitle>
+
                             <CardDescription className="text-red-300/70">
                                 We ran into a problem syncing your meeting
                                 rooms. Please check your connection and try
                                 again.
                             </CardDescription>
                         </CardHeader>
+
                         <CardFooter className="justify-center">
                             <button
                                 type="button"

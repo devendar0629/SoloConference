@@ -1,10 +1,11 @@
 import z from "zod";
 
 export const joinConferenceFormSchema = z.object({
-    conferenceCodeOrLink: z
+    code: z
         .string({
-            error: "Conference code or link is required"
+            error: "Conference code is required"
         })
-        .min(1, "Conference code or link is required")
+        .min(1, "Conference code is required")
 });
+
 export type JoinConferenceFormData = z.infer<typeof joinConferenceFormSchema>;

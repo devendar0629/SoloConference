@@ -46,12 +46,13 @@ type GenerateMeetingLinkAPIResponse = {
     meetingCode: string;
 };
 
-const GenerateMeetingLinkButton: React.FC = () => {
+const GenerateMeetingLinkDialog: React.FC = () => {
     const navigate = useNavigate();
 
     const generateMeetingLinkForm = useForm<GenerateMeetingLinkFormData>({
         defaultValues: {
-            title: ""
+            title: "",
+            password: ""
         },
         resolver: zodResolver(generateMeetingLinkFormSchema)
     });
@@ -83,24 +84,26 @@ const GenerateMeetingLinkButton: React.FC = () => {
     };
 
     return (
-        <Dialog>
-            <DialogTrigger
-                render={
-                    <Button
-                        type="button"
-                        className="w-full py-6 text-base font-medium"
-                    >
-                        Generate Meeting Link
-                    </Button>
+        <Dialog
+            onOpenChange={(open) => {
+                if (!open) {
+                    console.log("Resetting the form ...");
+                    generateMeetingLinkForm.reset();
                 }
-            />
+            }}
+        >
+            <DialogTrigger className="w-fit rounded-2xl">
+                <div className="w-fit px-6 py-3 text-base font-medium rounded-2xl border border-zinc-700 hover:border-zinc-600 cursor-pointer transition-colors">
+                    Generate Meeting Link
+                </div>
+            </DialogTrigger>
 
             <DialogContent className="sm:max-w-sm">
                 <form
                     onSubmit={generateMeetingLinkForm.handleSubmit(
                         handleGenerateMeetingLink
                     )}
-                    className="space-y-5"
+                    className="space-y-3.5"
                 >
                     <DialogHeader>
                         <DialogTitle>Generate Meeting Link</DialogTitle>
@@ -139,9 +142,39 @@ const GenerateMeetingLinkButton: React.FC = () => {
                                 );
                             }}
                         />
+
+                        <Controller
+                            name="password"
+                            control={generateMeetingLinkForm.control}
+                            render={({ field, fieldState }) => {
+                                return (
+                                    <Field
+                                        data-invalid={fieldState.invalid}
+                                        className="gap-2"
+                                    >
+                                        <FieldLabel htmlFor={field.name}>
+                                            Password
+                                        </FieldLabel>
+
+                                        <Input
+                                            aria-invalid={fieldState.invalid}
+                                            {...field}
+                                            type="password"
+                                            className="max-w-xl py-4.5 px-3"
+                                        />
+
+                                        {fieldState.invalid && (
+                                            <FieldError
+                                                errors={[fieldState.error]}
+                                            />
+                                        )}
+                                    </Field>
+                                );
+                            }}
+                        />
                     </FieldGroup>
 
-                    <DialogFooter>
+                    <DialogFooter className="mt-6">
                         <DialogClose
                             render={
                                 <Button type="button" variant="outline">
@@ -171,7 +204,7 @@ const JoinConferenceForm: React.FC = () => {
 
     const conferenceCodeOrLinkForm = useForm<JoinConferenceFormData>({
         defaultValues: {
-            conferenceCodeOrLink: ""
+            code: ""
         },
         resolver: zodResolver(joinConferenceFormSchema)
     });
@@ -179,7 +212,7 @@ const JoinConferenceForm: React.FC = () => {
     const handleJoinConference: SubmitHandler<JoinConferenceFormData> = (
         data
     ) => {
-        navigate(`/conference/${data.conferenceCodeOrLink}`);
+        navigate(`/conference/${data.code}`);
     };
 
     return (
@@ -191,7 +224,7 @@ const JoinConferenceForm: React.FC = () => {
         >
             <FieldGroup>
                 <Controller
-                    name="conferenceCodeOrLink"
+                    name="code"
                     control={conferenceCodeOrLinkForm.control}
                     render={({ field, fieldState }) => {
                         return (
@@ -202,7 +235,7 @@ const JoinConferenceForm: React.FC = () => {
                                 <Input
                                     aria-invalid={fieldState.invalid}
                                     {...field}
-                                    placeholder="Enter code or link"
+                                    placeholder="Enter conference code"
                                     className="w-full py-5.5 px-4.5 placeholder:text-base"
                                 />
                                 {fieldState.invalid && (
@@ -280,19 +313,20 @@ export default function SoloConferenceDashboard() {
     const { user } = useStore((state) => state.auth);
 
     return (
-        <div className="min-h-screen bg-zinc-950 text-zinc-50 font-sans selection:bg-indigo-500/30">
+        <div className="min-h-screen bg-zinc-950 text-zinc-50 font-sans selection:bg-indigo-500/35">
             {/* Top Navigation */}
             <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-zinc-800 bg-zinc-950/80 px-6 backdrop-blur-md">
                 <div className="flex items-center gap-2">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-400">
                         <Users size={20} />
                     </div>
+
                     <span className="text-xl font-bold tracking-tight text-zinc-50">
                         SoloConf
                     </span>
                 </div>
 
-                <div className="size-8 overflow-hidden rounded-full border border-slate-400">
+                <div className="size-9 overflow-hidden rounded-full border-2 border-slate-400">
                     <UserProfilePopover />
                 </div>
             </header>
@@ -330,7 +364,7 @@ export default function SoloConferenceDashboard() {
                                 </p>
                             </div>
 
-                            <GenerateMeetingLinkButton />
+                            <GenerateMeetingLinkDialog />
                         </div>
 
                         {/* Join Conference Card */}
@@ -345,9 +379,8 @@ export default function SoloConferenceDashboard() {
                                 </h2>
 
                                 <p className="text-zinc-400 leading-relaxed">
-                                    Already have a room code? Enter it below or
-                                    paste the full link to join an existing
-                                    session.
+                                    Already have a room code? Enter it below to
+                                    join an existing session.
                                 </p>
                             </div>
 
@@ -356,11 +389,13 @@ export default function SoloConferenceDashboard() {
                     </div>
 
                     <Link
-                        className="flex gap-3 justify-baseline text-base text-zinc-300 mx-auto underline-offset-4 hover:text-indigo-600 transition-colors"
+                        className="flex gap-2 items-center text-base text-zinc-300 mx-auto underline-offset-4 hover:text-indigo-600 transition-colors group"
                         to="/conferences"
                     >
                         <p className="underline">Go to your conferences</p>
-                        <p className="text-2xl">&rarr;</p>
+                        <p className="text-2xl group-hover:translate-x-1.5 transition-transform">
+                            &rarr;
+                        </p>
                     </Link>
                 </div>
             </main>
