@@ -19,7 +19,7 @@ export default function RootLayout() {
             setAccessToken(data.accessToken);
             api.defaults.headers.common["Authorization"] =
                 `Bearer ${data.accessToken}`;
-            storeLogin(data.user);
+            storeLogin(data.user, data.accessToken);
         };
 
         const onFailure = () => {
@@ -33,7 +33,22 @@ export default function RootLayout() {
             try {
                 const user = await fetchCurrentUser();
 
-                storeLogin(user);
+                const authHeaders =
+                    api.defaults.headers.common["Authorization"];
+                if (!authHeaders) {
+                    throw new Error("No Authorization header found");
+                }
+
+                if (
+                    typeof authHeaders !== "string" ||
+                    !authHeaders.startsWith("Bearer ")
+                ) {
+                    throw new Error("Invalid Authorization header format");
+                }
+
+                const accessToken = authHeaders.replace("Bearer ", "");
+
+                storeLogin(user, accessToken);
             } catch (error) {
                 console.error("Error fetching current user:", error);
                 storeLogout();

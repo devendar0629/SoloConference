@@ -47,3 +47,15 @@ export const getConferenceById = async (
         });
     }
 };
+
+type GetConferenceJoinTokenAPIResponse = {
+    token: string;
+};
+
+export const getConferenceJoinToken = async (conferenceId: string) => {
+    const response = await api.post<GetConferenceJoinTokenAPIResponse>(
+        `/conferences/${conferenceId}/join-token`
+    );
+
+    return response.data.token;
+};

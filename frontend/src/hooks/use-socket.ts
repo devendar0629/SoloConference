@@ -1,5 +1,5 @@
 import { isDevelopment, serverHost, serverPort } from "@/config/constants";
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 
 type useSocketParams = {
@@ -14,12 +14,12 @@ type useSocketParams = {
     ) => void;
 };
 
-export const useSocket = ({ onConnect, onEvent }: useSocketParams = {}) => {
+export const useSocket = ({ onConnect, onEvent }: useSocketParams) => {
     const [socket, setSocket] = useState<Socket | null>(null);
     const [isConnected, setIsConnected] = useState<boolean>(false);
     const socketRef = useRef<Socket | null>(null);
 
-    const emitEvent = (event: string, data: unknown) => {
+    const emitEvent = useCallback((event: string, data: unknown) => {
         const currentSocket = socketRef.current;
 
         if (!currentSocket?.connected) {
@@ -28,41 +28,47 @@ export const useSocket = ({ onConnect, onEvent }: useSocketParams = {}) => {
         }
 
         currentSocket.emit(event, data);
-    };
+    }, []);
 
-    const connect = () => {
-        const protocol = isDevelopment ? "ws" : "wss";
+    const connect = useCallback(
+        (joinToken: string) => {
+            const wsProtocol = isDevelopment ? "ws" : "wss";
 
-        const _socket = io(`${protocol}://${serverHost}:${serverPort}`, {
-            withCredentials: true
-        });
+            const _socket = io(`${wsProtocol}://${serverHost}:${serverPort}`, {
+                withCredentials: true,
+                auth: { join_token: joinToken }
+            });
 
-        socketRef.current = _socket;
-        setSocket(_socket);
+            socketRef.current = _socket;
+            setSocket(_socket);
 
-        _socket.on("connect", () => {
-            setIsConnected(true);
-            onConnect?.(_socket, (event, data) => _socket.emit(event, data));
-        });
+            _socket.on("connect", () => {
+                setIsConnected(true);
+                onConnect?.(_socket, (event, data) =>
+                    _socket.emit(event, data)
+                );
+            });
 
-        _socket.on("disconnect", () => {
-            setIsConnected(false);
-            if (socketRef.current === _socket) {
-                socketRef.current = null;
-            }
-        });
+            _socket.on("disconnect", () => {
+                setIsConnected(false);
+                if (socketRef.current === _socket) {
+                    socketRef.current = null;
+                }
+            });
 
-        _socket.onAny((event, ...args) => {
-            onEvent?.(emitEvent, event, args[0]);
-        });
-    };
+            _socket.onAny((event, ...args) => {
+                onEvent?.(emitEvent, event, args[0]);
+            });
+        },
+        [onConnect, onEvent, emitEvent]
+    );
 
-    const disconnect = () => {
+    const disconnect = useCallback(() => {
         socketRef.current?.close();
         socketRef.current = null;
         setSocket(null);
         setIsConnected(false);
-    };
+    }, []);
 
     return { socket, isConnected, connect, disconnect, emitEvent };
 };

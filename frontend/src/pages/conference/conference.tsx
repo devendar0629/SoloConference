@@ -19,17 +19,18 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
-import { getConferenceById } from "@/api/conference";
+import { getConferenceById, getConferenceJoinToken } from "@/api/conference";
+import { toast } from "sonner";
 
 type ConferencePageParams = {
     conference_id: string;
 };
 
-type ConferenceSignalPayload = {
-    sdp?: RTCSessionDescriptionInit["sdp"];
-    type?: RTCSessionDescriptionInit["type"];
-    iceCandidate?: RTCIceCandidateInit | RTCIceCandidate;
-};
+// type ConferenceSignalPayload = {
+//     sdp?: RTCSessionDescriptionInit["sdp"];
+//     type?: RTCSessionDescriptionInit["type"];
+//     iceCandidate?: RTCIceCandidateInit | RTCIceCandidate;
+// };
 
 // --- COMPONENTS FOR DIFFERENT STATES ---
 
@@ -133,7 +134,7 @@ const ConferencePreJoinScreen = ({
                         variant="secondary"
                         className="mt-3 bg-zinc-800/50 text-zinc-300 border-zinc-700/50"
                     >
-                        Room ID: {conferenceId}
+                        Conference ID: {conferenceId}
                     </Badge>
                 </div>
 
@@ -174,9 +175,6 @@ export default function ConferencePage() {
         queryFn: async () => getConferenceById(conferenceId ?? "")
     });
 
-    const localVideoRef = useRef<HTMLVideoElement>(null);
-    const remoteVideoRef = useRef<HTMLVideoElement>(null);
-
     const {
         userMediaStream,
         requestUserMedia,
@@ -208,13 +206,13 @@ export default function ConferencePage() {
         async (
             emitEvent: (event: string, data?: unknown) => void,
             event: string,
-            data: unknown
+            data: any
         ) => {
-            const payload = (data ?? {}) as ConferenceSignalPayload;
+            const payload = data ?? {};
 
             switch (event) {
                 case "conference:join-failed": {
-                    const code = (payload as any)?.code;
+                    const code = payload.code;
 
                     if (code === "ALREADY_IN_CONFERENCE") {
                         setJoinError("You are already in another conference.");
@@ -269,6 +267,10 @@ export default function ConferencePage() {
                         type: "answer"
                     });
 
+                    toast.info(
+                        "Connection established with the other participant."
+                    );
+
                     break;
                 }
 
@@ -281,9 +283,10 @@ export default function ConferencePage() {
                 }
 
                 case "conference:user-left": {
-                    if (remoteVideoRef.current) {
-                        remoteVideoRef.current.srcObject = null;
-                    }
+                    closePeerConnection();
+                    toast.info(
+                        "The other participant has left the conference."
+                    );
 
                     break;
                 }
@@ -295,11 +298,7 @@ export default function ConferencePage() {
             setRemoteDescription,
             createAnswer,
             addIceCandidate,
-            closePeerConnection,
-            initializePeerConnection,
-            addLocalStream,
-            userMediaStream
-            // socket
+            closePeerConnection
         ]
     );
 
@@ -310,7 +309,6 @@ export default function ConferencePage() {
         isConnected: isSocketConnected
     } = useSocket({
         onConnect: (_, emit) => {
-            console.log("Connected to signaling server");
             emit("conference:join", { conference_id: conferenceId });
         },
         onEvent: handleSocketEvent
@@ -325,11 +323,25 @@ export default function ConferencePage() {
     }, [joinError, stopUserMedia, disconnectSocket]);
 
     // Handle joining the room
-    const handleJoin = async () => {
-        await requestUserMedia();
-        setHasJoined(true);
-        connectSocket();
-    };
+    const handleJoin = useCallback(async () => {
+        if (!isPermissionGranted) {
+            await requestUserMedia();
+        }
+
+        try {
+            const joinToken = await getConferenceJoinToken(conferenceId ?? "");
+            connectSocket(joinToken);
+            setHasJoined(true);
+        } catch (error) {
+            console.error("Error fetching join token:", error);
+        }
+    }, [
+        conferenceId,
+        isPermissionGranted,
+        requestUserMedia,
+        setHasJoined,
+        connectSocket
+    ]);
 
     // Handle hanging up
     const handleLeave = () => {
@@ -363,19 +375,6 @@ export default function ConferencePage() {
         emitEvent,
         conferenceId
     ]);
-
-    // Attach streams to video elements
-    useEffect(() => {
-        if (localVideoRef.current && userMediaStream) {
-            localVideoRef.current.srcObject = userMediaStream;
-        }
-    }, [userMediaStream]);
-
-    useEffect(() => {
-        if (remoteVideoRef.current && remoteStream) {
-            remoteVideoRef.current.srcObject = remoteStream;
-        }
-    }, [remoteStream]);
 
     // Media Toggle Handlers
     const toggleMic = () => {
@@ -418,18 +417,16 @@ export default function ConferencePage() {
         );
     }
 
-    console.log("Local Stream:", userMediaStream);
-    console.log("Remote Stream:", remoteStream);
-
     // --- RENDER ACTIVE CONFERENCE ---
     return (
         <div className="relative flex h-screen w-full flex-col bg-[#0a0a0a] text-zinc-100 overflow-hidden">
             {/* Header */}
-            <header className="absolute top-0 w-full z-20 flex h-20 items-center justify-between px-6 bg-linear-to-b from-black/80 to-transparent">
+            <header className="absolute top-0 w-full z-20 flex h-18 items-center justify-between px-4 bg-linear-to-b from-black/80 to-transparent">
                 <div className="flex items-center gap-4">
                     <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-800/80 backdrop-blur-md ring-1 ring-white/10">
                         <Users className="h-5 w-5 text-blue-400" />
                     </div>
+
                     <div>
                         <h1 className="text-sm font-semibold text-white leading-tight">
                             {conference?.title || "Conference Room"}
@@ -460,19 +457,25 @@ export default function ConferencePage() {
             </header>
 
             {/* Main Video Area */}
-            <main className="flex-1 w-full h-full p-4 pt-24 pb-32">
+            <main className="flex-1 w-full h-full p-4 pt-18 pb-26">
                 <div className="relative mx-auto h-full max-w-7xl overflow-hidden rounded-3xl bg-zinc-900/50 ring-1 ring-white/5 shadow-2xl">
                     {/* Remote Stream Container (Only visible when remote joins) */}
                     {remoteStream && (
                         <div className="absolute inset-0 z-10 bg-zinc-950">
                             <video
-                                ref={remoteVideoRef}
+                                ref={(node) => {
+                                    if (node && remoteStream) {
+                                        node.srcObject = remoteStream;
+                                    }
+                                }}
                                 autoPlay
                                 playsInline
                                 className="h-full w-full object-cover"
                             />
+
                             <div className="absolute top-6 left-6 z-20 flex items-center gap-2 rounded-lg bg-black/40 px-3 py-1.5 backdrop-blur-md border border-white/10 shadow-sm">
                                 <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+
                                 <span className="text-sm font-medium text-white">
                                     Remote Peer
                                 </span>
@@ -484,13 +487,17 @@ export default function ConferencePage() {
                     <div
                         className={`transition-all duration-700 ease-in-out ${
                             remoteStream
-                                ? "absolute bottom-6 right-6 z-30 h-48 w-32 sm:h-64 sm:w-44 md:h-72 md:w-56 rounded-2xl shadow-2xl ring-2 ring-white/10 overflow-hidden hover:scale-[1.02]"
+                                ? "absolute bottom-4 right-4 z-30 h-48 w-32 sm:h-64 sm:w-44 md:h-72 md:w-56 rounded-2xl shadow-2xl ring-2 ring-white/10 overflow-hidden hover:scale-[1.02]"
                                 : "absolute inset-0 z-10"
                         }`}
                     >
                         {isPermissionGranted ? (
                             <video
-                                ref={localVideoRef}
+                                ref={(node) => {
+                                    if (node && userMediaStream) {
+                                        node.srcObject = userMediaStream;
+                                    }
+                                }}
                                 autoPlay
                                 playsInline
                                 muted
@@ -518,9 +525,11 @@ export default function ConferencePage() {
                                     <div className="absolute inset-0 rounded-full border-[3px] border-blue-500/30 border-t-blue-500 animate-spin" />
                                     <Users className="h-8 w-8 text-zinc-300" />
                                 </div>
+
                                 <h2 className="text-2xl font-semibold text-white mb-2 shadow-black drop-shadow-md">
-                                    Waiting for others to join
+                                    Waiting for other participant to join
                                 </h2>
+
                                 <p className="text-zinc-300 font-medium shadow-black drop-shadow-md">
                                     You're the only one here right now
                                 </p>
@@ -541,7 +550,7 @@ export default function ConferencePage() {
             </main>
 
             {/* Floating Controls Dock */}
-            <footer className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-zinc-900/80 px-4 py-3 rounded-full border border-white/10 shadow-2xl backdrop-blur-xl z-30">
+            <footer className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-zinc-900/80 px-4 py-3 rounded-full border border-white/10 shadow-2xl backdrop-blur-xl z-30">
                 <Button
                     variant={isMicOn ? "secondary" : "destructive"}
                     size="icon"

@@ -6,11 +6,8 @@ export const leaveConferenceRoom = (socket: Socket, conferenceId: string) => {
         return false;
     }
 
+    socket.to(conferenceId).emit("conference:user-left");
     socket.leave(conferenceId);
-
-    socket.to(conferenceId).emit("conference:user-left", {
-        conference_id: conferenceId,
-    });
 
     return true;
 };
@@ -21,9 +18,7 @@ export const leaveAllConferenceRooms = (socket: Socket) => {
     );
 
     conferenceRooms.forEach((room) => {
-        socket.to(room).emit("conference:user-left", {
-            conference_id: room,
-        });
+        socket.to(room).emit("conference:user-left");
         socket.leave(room);
     });
 

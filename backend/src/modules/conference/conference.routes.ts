@@ -13,5 +13,9 @@ router.post(
 router.get("/all", conferenceController.getAllConferences);
 router.get("/:conference_id", conferenceController.getConference);
 router.delete("/all", conferenceController.deleteAllConferences);
+router.post(
+    "/:conference_id/join-token",
+    conferenceController.generateConferenceJoinToken,
+);
 
 export default router;

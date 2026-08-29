@@ -11,8 +11,9 @@ export type AuthSliceState = {
     user: User | null;
     isLoggedIn: boolean;
     isInitializing: boolean;
+    accessToken?: string;
 
-    login: (user: User) => void;
+    login: (user: User, accessToken: string) => void;
     logout: () => void;
 };
 
@@ -27,9 +28,10 @@ export const createAuthSlice: StateCreator<
         isLoggedIn: false,
         isInitializing: true,
 
-        login: (newUser) => {
+        login: (newUser, accessToken) => {
             set((state) => {
                 state.auth.user = newUser;
+                state.auth.accessToken = accessToken;
 
                 state.auth.isLoggedIn = true;
                 state.auth.isInitializing = false;
@@ -39,6 +41,7 @@ export const createAuthSlice: StateCreator<
         logout: () => {
             set((state) => {
                 state.auth.user = null;
+                state.auth.accessToken = undefined;
 
                 state.auth.isLoggedIn = false;
                 state.auth.isInitializing = false;

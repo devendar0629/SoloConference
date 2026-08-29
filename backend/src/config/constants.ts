@@ -1,3 +1,8 @@
+export const CONFERENCE_TOKEN_EXPIRY_MS = parseInt(
+    process.env.CONFERENCE_TOKEN_EXPIRY_MS || "900",
+    10,
+);
+
 export const ACCESS_TOKEN_EXPIRY_MS = parseInt(
     process.env.ACCESS_TOKEN_EXPIRY_MS || "3600",
     10,

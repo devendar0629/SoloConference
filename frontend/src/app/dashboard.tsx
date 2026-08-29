@@ -52,7 +52,7 @@ const GenerateMeetingLinkDialog: React.FC = () => {
     const generateMeetingLinkForm = useForm<GenerateMeetingLinkFormData>({
         defaultValues: {
             title: "",
-            password: ""
+            passcode: ""
         },
         resolver: zodResolver(generateMeetingLinkFormSchema)
     });
@@ -87,7 +87,6 @@ const GenerateMeetingLinkDialog: React.FC = () => {
         <Dialog
             onOpenChange={(open) => {
                 if (!open) {
-                    console.log("Resetting the form ...");
                     generateMeetingLinkForm.reset();
                 }
             }}
@@ -144,7 +143,7 @@ const GenerateMeetingLinkDialog: React.FC = () => {
                         />
 
                         <Controller
-                            name="password"
+                            name="passcode"
                             control={generateMeetingLinkForm.control}
                             render={({ field, fieldState }) => {
                                 return (
@@ -153,7 +152,7 @@ const GenerateMeetingLinkDialog: React.FC = () => {
                                         className="gap-2"
                                     >
                                         <FieldLabel htmlFor={field.name}>
-                                            Password
+                                            Passcode
                                         </FieldLabel>
 
                                         <Input
@@ -238,6 +237,7 @@ const JoinConferenceForm: React.FC = () => {
                                     placeholder="Enter conference code"
                                     className="w-full py-5.5 px-4.5 placeholder:text-base"
                                 />
+
                                 {fieldState.invalid && (
                                     <FieldError errors={[fieldState.error]} />
                                 )}
@@ -272,15 +272,13 @@ const UserProfilePopover: React.FC = () => {
 
     return (
         <Popover>
-            <PopoverTrigger
-                render={
-                    <img
-                        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || "User")}&background=312e81&color=c7d2fe`}
-                        alt={user?.name || "User avatar"}
-                        className="h-full w-full object-cover cursor-pointer"
-                    />
-                }
-            />
+            <PopoverTrigger>
+                <img
+                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || "User")}&background=312e81&color=c7d2fe`}
+                    alt={user?.name || "User avatar"}
+                    className="h-full w-full object-cover cursor-pointer"
+                />
+            </PopoverTrigger>
 
             <PopoverContent className="w-64">
                 <PopoverHeader>

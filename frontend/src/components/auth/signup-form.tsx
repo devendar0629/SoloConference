@@ -17,7 +17,7 @@ import { Link, useNavigate } from "react-router";
 import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signupFormSchema, type SignupFormData } from "@/schemas/signup";
-import { useSignupMutation } from "@/api/login";
+import { useSignupMutation } from "@/api/auth";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
 import { Loader2Icon } from "lucide-react";

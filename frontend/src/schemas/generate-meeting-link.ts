@@ -7,11 +7,11 @@ export const generateMeetingLinkFormSchema = z.object({
         })
         .min(1, "Title is required"),
 
-    password: z
+    passcode: z
         .string({
-            error: "Password is required"
+            error: "Passcode is required"
         })
-        .min(1, "Password is required")
+        .min(1, "Passcode is required")
 });
 export type GenerateMeetingLinkFormData = z.infer<
     typeof generateMeetingLinkFormSchema

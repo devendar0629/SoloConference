@@ -18,7 +18,7 @@ import { Link } from "react-router";
 import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginFormSchema, type LoginFormData } from "@/schemas/login";
-import { useLoginMutation } from "@/api/login";
+import { useLoginMutation } from "@/api/auth";
 import { AxiosError } from "axios";
 import { Loader2Icon } from "lucide-react";
 

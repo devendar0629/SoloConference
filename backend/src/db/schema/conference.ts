@@ -12,6 +12,7 @@ export const ConferenceTable = pgTable("conferences", {
     id: uuid().primaryKey().defaultRandom(),
     title: varchar({ length: 255 }).notNull(),
     owner: integer().notNull(),
+    passcode: varchar({ length: 255 }),
 
     createdAt: timestamp().defaultNow().notNull(),
     updatedAt: timestamp()

@@ -3,6 +3,10 @@ import { db } from "../../db/index.js";
 import { ConferenceTable } from "../../db/schema/index.js";
 import type { CreateConferenceBody } from "./conference.schema.js";
 import { eq } from "drizzle-orm";
+import argon2 from "argon2";
+import jsonwebtoken from "jsonwebtoken";
+import { CONFERENCE_TOKEN_EXPIRY_MS } from "../../config/constants.js";
+import { UUIDSchema } from "../../utils/validation-schema.js";
 
 export const createConference: RequestHandler<
     any,
@@ -10,14 +14,20 @@ export const createConference: RequestHandler<
     CreateConferenceBody,
     any
 > = async (req, res) => {
-    const { title } = req.body;
+    const { title, passcode } = req.body;
+    let hashedPasscode = undefined;
 
     try {
+        if (passcode !== undefined) {
+            hashedPasscode = await argon2.hash(passcode);
+        }
+
         const [newConference] = await db
             .insert(ConferenceTable)
             .values({
                 owner: req.user.id,
                 title,
+                passcode: hashedPasscode,
             })
             .returning({
                 id: ConferenceTable.id,
@@ -52,6 +62,7 @@ export const getAllConferences: RequestHandler = async (req, res) => {
             },
             columns: {
                 owner: false,
+                passcode: false,
             },
         });
 
@@ -77,6 +88,7 @@ export const getConference: RequestHandler = async (req, res) => {
             },
             columns: {
                 owner: false,
+                passcode: false,
             },
         });
 
@@ -104,5 +116,52 @@ export const deleteAllConferences: RequestHandler = async (req, res) => {
         return res
             .status(500)
             .json({ message: "Failed to delete conferences" });
+    }
+};
+
+export const generateConferenceJoinToken: RequestHandler = async (req, res) => {
+    const { conference_id: conferenceId } = req.params;
+
+    try {
+        if (typeof conferenceId !== "string" || conferenceId.trim() === "") {
+            return res.status(400).json({ message: "Invalid conference ID" });
+        }
+
+        if (UUIDSchema.safeParse(conferenceId).success === false) {
+            return res
+                .status(400)
+                .json({ message: "Invalid conference ID format" });
+        }
+
+        const conference = await db.query.ConferenceTable.findFirst({
+            where: (fields, operators) => {
+                return operators.eq(fields.id, conferenceId);
+            },
+        });
+
+        if (!conference) {
+            return res.status(404).json({ message: "Conference not found" });
+        }
+
+        const tokenPayload = {
+            conference_id: conference.id,
+            user_id: req.user.id,
+        };
+
+        const joinToken = jsonwebtoken.sign(
+            tokenPayload,
+            process.env.CONFERENCE_TOKEN_SECRET!,
+            {
+                expiresIn: CONFERENCE_TOKEN_EXPIRY_MS,
+            },
+        );
+
+        return res.json({ token: joinToken });
+    } catch (error) {
+        console.log("Error generating conference join token:", error);
+
+        res.status(500).json({
+            message: "Failed to generate conference join token",
+        });
     }
 };
