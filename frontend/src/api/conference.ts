@@ -37,7 +37,7 @@ export const createConference = async (data: GenerateMeetingLinkParams) => {
 
 export const getConferenceById = async (
     conferenceId: string
-): Promise<Conference> => {
+): Promise<Conference & { isPasscodeRequired: boolean }> => {
     try {
         const response = await api.get(`/conferences/${conferenceId}`);
         return response.data.data;
@@ -52,9 +52,13 @@ type GetConferenceJoinTokenAPIResponse = {
     token: string;
 };
 
-export const getConferenceJoinToken = async (conferenceId: string) => {
+export const getConferenceJoinToken = async (
+    conferenceId: string,
+    passcode?: string
+) => {
     const response = await api.post<GetConferenceJoinTokenAPIResponse>(
-        `/conferences/${conferenceId}/join-token`
+        `/conferences/${conferenceId}/join-token`,
+        { passcode }
     );
 
     return response.data.token;

@@ -27,38 +27,26 @@ export const leaveAllConferenceRooms = (socket: Socket) => {
 
 export const registerConferenceHandlers = (io: Server, socket: Socket) => {
     socket.on("disconnecting", () => {
-        console.log("disconnecting :: ", socket.id);
-
         leaveAllConferenceRooms(socket);
     });
 
     socket.on("conference:join", (data) => {
-        console.log("conference:join :: ", data);
-
         conferenceHandlers.handleConferenceJoin(io, socket, data);
     });
 
     socket.on("conference:leave", (data) => {
-        console.log("conference:leave :: ", data);
-
         conferenceHandlers.handleConferenceLeave(socket, data);
     });
 
     socket.on("conference:offer", (data) => {
-        console.log("conference:offer :: ", data);
-
         conferenceHandlers.handleConferenceOffer(socket, data);
     });
 
     socket.on("conference:answer", (data) => {
-        console.log("conference:answer :: ", data);
-
         conferenceHandlers.handleConferenceAnswer(socket, data);
     });
 
     socket.on("conference:ice-candidate", (data) => {
-        console.log("conference:ice-candidate :: ", data);
-
         conferenceHandlers.handleConferenceIceCandidate(socket, data);
     });
 };

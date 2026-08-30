@@ -73,6 +73,10 @@ const GenerateMeetingLinkDialog: React.FC = () => {
         GenerateMeetingLinkFormData
     > = async (data) => {
         try {
+            if (data.passcode === "") {
+                delete data.passcode;
+            }
+
             const response = await generateMeetingLinkMutation(data);
 
             if (response?.meetingCode) {
@@ -377,8 +381,8 @@ export default function SoloConferenceDashboard() {
                                 </h2>
 
                                 <p className="text-zinc-400 leading-relaxed">
-                                    Already have a room code? Enter it below to
-                                    join an existing session.
+                                    Already have a conference code? Enter it
+                                    below to join an existing session.
                                 </p>
                             </div>
 

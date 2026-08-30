@@ -31,12 +31,12 @@ export const useSocket = ({ onConnect, onEvent }: useSocketParams) => {
     }, []);
 
     const connect = useCallback(
-        (joinToken: string) => {
+        (auth?: { [key: string]: any }) => {
             const wsProtocol = isDevelopment ? "ws" : "wss";
 
             const _socket = io(`${wsProtocol}://${serverHost}:${serverPort}`, {
                 withCredentials: true,
-                auth: { join_token: joinToken }
+                auth
             });
 
             socketRef.current = _socket;

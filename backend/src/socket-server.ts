@@ -3,6 +3,11 @@ import type { Server as HttpServer } from "http";
 import { registerConferenceHandlers } from "./modules/conference/socket/conference.socket.js";
 import jsonwebtoken from "jsonwebtoken";
 
+type JoinTokenPayload = {
+    conference_id: string;
+    user_id: string;
+};
+
 export const initSocketServer = (httpServer: HttpServer) => {
     const io = new Server(httpServer, {
         cors: {
@@ -12,19 +17,38 @@ export const initSocketServer = (httpServer: HttpServer) => {
     });
 
     io.use(async (socket, next) => {
-        const authCredentials = socket.handshake.auth;
-        const conferenceJoinToken = authCredentials?.join_token;
+        const conferenceJoinToken = socket.handshake.auth.join_token;
+        const conferenceId = socket.handshake.auth.conference_id;
 
-        console.log(
-            "MIDDLEWARE :: Conference Join Token: ",
-            conferenceJoinToken,
-        );
+        if (!conferenceJoinToken || !conferenceId) {
+            const errorObj = new Error(
+                "Missing conference join token or conference ID",
+            );
+
+            (errorObj as any).data = {
+                code: "INVALID_PAYLOAD",
+            };
+
+            next(errorObj);
+        }
 
         try {
             const tokenPayload = jsonwebtoken.verify(
                 conferenceJoinToken,
                 process.env.CONFERENCE_TOKEN_SECRET!,
-            );
+            ) as JoinTokenPayload;
+
+            if (tokenPayload.conference_id !== conferenceId) {
+                const errorObj = new Error(
+                    "Conference ID does not match the token payload",
+                );
+
+                (errorObj as any).data = {
+                    code: "INVALID_CONFERENCE_JOIN_TOKEN",
+                };
+
+                next(errorObj);
+            }
 
             socket.data.conferenceJoinTokenPayload = tokenPayload;
 
@@ -50,14 +74,6 @@ export const initSocketServer = (httpServer: HttpServer) => {
         });
 
         registerConferenceHandlers(io, socket);
-    });
-
-    io.use((socket, next) => {
-        const auth = socket.handshake.auth;
-
-        console.log("MIDDLEWARE :: Auth details: ", auth);
-
-        next();
     });
 
     return io;

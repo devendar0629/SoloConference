@@ -7,6 +7,7 @@ import argon2 from "argon2";
 import jsonwebtoken from "jsonwebtoken";
 import { CONFERENCE_TOKEN_EXPIRY_MS } from "../../config/constants.js";
 import { UUIDSchema } from "../../utils/validation-schema.js";
+import { sql } from "drizzle-orm";
 
 export const createConference: RequestHandler<
     any,
@@ -83,18 +84,32 @@ export const getConference: RequestHandler = async (req, res) => {
         }
 
         const conference = await db.query.ConferenceTable.findFirst({
-            where: (fields, operators) => {
-                return operators.eq(fields.id, conferenceId);
-            },
+            where: (fields, { eq }) => eq(fields.id, conferenceId),
             columns: {
                 owner: false,
                 passcode: false,
             },
+            extras: {
+                isPasscodeRequired:
+                    sql<boolean>`CASE WHEN ${ConferenceTable.passcode} IS NOT NULL AND NOT ${ConferenceTable.owner} = ${req.user.id} THEN TRUE ELSE FALSE END`
+                        .mapWith(Boolean)
+                        .as("is_passcode_required"),
+            },
         });
+
+        if (!conference) {
+            return res.status(404).json({ message: "Conference not found" });
+        }
 
         return res.json({
             message: "Conference fetched successfully",
-            data: conference,
+            data: {
+                id: conference.id,
+                title: conference.title,
+                createdAt: conference.createdAt,
+                updatedAt: conference.updatedAt,
+                isPasscodeRequired: conference.isPasscodeRequired,
+            },
         });
     } catch (error) {
         return res.status(500).json({ message: "Failed to fetch conference" });
@@ -121,6 +136,7 @@ export const deleteAllConferences: RequestHandler = async (req, res) => {
 
 export const generateConferenceJoinToken: RequestHandler = async (req, res) => {
     const { conference_id: conferenceId } = req.params;
+    const passcode = req.body.passcode;
 
     try {
         if (typeof conferenceId !== "string" || conferenceId.trim() === "") {
@@ -143,6 +159,30 @@ export const generateConferenceJoinToken: RequestHandler = async (req, res) => {
             return res.status(404).json({ message: "Conference not found" });
         }
 
+        const isOwner = req.user.id === conference.owner;
+        const isPasscodeProtected = !!conference.passcode;
+
+        const isPasscodeRequired = isPasscodeProtected && !isOwner;
+        if (isPasscodeRequired) {
+            if (!passcode) {
+                return res
+                    .status(400)
+                    .json({ message: "Passcode is required" });
+            }
+
+            const isPasscodeValid = await argon2.verify(
+                conference.passcode!,
+                passcode,
+            );
+
+            if (!isPasscodeValid) {
+                return res.status(400).json({
+                    code: "INVALID_PASSCODE",
+                    message: "Invalid passcode",
+                });
+            }
+        }
+
         const tokenPayload = {
             conference_id: conference.id,
             user_id: req.user.id,
@@ -158,8 +198,6 @@ export const generateConferenceJoinToken: RequestHandler = async (req, res) => {
 
         return res.json({ token: joinToken });
     } catch (error) {
-        console.log("Error generating conference join token:", error);
-
         res.status(500).json({
             message: "Failed to generate conference join token",
         });
