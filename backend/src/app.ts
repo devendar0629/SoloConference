@@ -12,6 +12,7 @@ app.use(
         credentials: true,
     }),
 );
+app.use("/static", e.static("public"));
 
 import { jwtMiddleware } from "./middleware/jwt.middleware.js";
 import { ensureUserIsAuthenticated } from "./middleware/auth.middleware.js";

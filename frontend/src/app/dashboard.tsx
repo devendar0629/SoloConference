@@ -41,6 +41,7 @@ import {
 } from "@/schemas/join-conference";
 import { toast } from "sonner";
 import { logoutUser } from "@/api/auth";
+import { isDevelopment, serverHost, serverPort } from "@/config/constants";
 
 type GenerateMeetingLinkAPIResponse = {
     meetingCode: string;
@@ -274,13 +275,15 @@ const UserProfilePopover: React.FC = () => {
         }
     };
 
+    const avatarUrl = `${isDevelopment ? "http" : "https"}://${serverHost}:${serverPort}/static/user_profile_icon.webp`;
+
     return (
         <Popover>
             <PopoverTrigger>
                 <img
-                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || "User")}&background=312e81&color=c7d2fe`}
+                    src={avatarUrl}
                     alt={user?.name || "User avatar"}
-                    className="h-full w-full object-cover cursor-pointer"
+                    className="h-full w-full object-cover bg-white cursor-pointer"
                 />
             </PopoverTrigger>
 
