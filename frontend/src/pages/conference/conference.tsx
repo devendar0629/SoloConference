@@ -31,7 +31,6 @@ import { useQuery } from "@tanstack/react-query";
 import { getConferenceById, getConferenceJoinToken } from "@/api/conference";
 import { toast } from "sonner";
 
-// --- REUSABLE UI WRAPPER ---
 const FullScreenCard = ({
     color = "red",
     icon: Icon,
@@ -216,7 +215,6 @@ export default function ConferencePage() {
                         })
                     );
 
-                    // FIX: Read from the ref to avoid the null stale closure
                     if (userMediaStreamRef.current) {
                         addLocalStream(userMediaStreamRef.current);
                     }
@@ -240,7 +238,6 @@ export default function ConferencePage() {
                         })
                     );
 
-                    // FIX: Read from the ref here as well
                     if (userMediaStreamRef.current) {
                         addLocalStream(userMediaStreamRef.current);
                     }
@@ -277,7 +274,6 @@ export default function ConferencePage() {
                 },
 
                 "conference:user-left": async () => {
-                    // 3. Just clean up the connection and stop. DO NOT create an offer here.
                     closePeerConnection();
                     toast.info("Participant left.");
                 }
@@ -293,8 +289,7 @@ export default function ConferencePage() {
             addIceCandidate,
             closePeerConnection,
             initializePeerConnection,
-            userMediaStream, // Added to prevent stale closures
-            addLocalStream // Added to prevent stale closures
+            addLocalStream
         ]
     );
 
@@ -381,7 +376,7 @@ export default function ConferencePage() {
         if (track) setFn((track.enabled = !track.enabled));
     };
 
-    // --- RENDER PRE-JOIN STATES ---
+    // --- Pre Join States ---
     if (isFetching) {
         return (
             <div className="flex h-screen w-full items-center justify-center bg-[#0a0a0a]">
@@ -466,7 +461,7 @@ export default function ConferencePage() {
         );
     }
 
-    // --- RENDER ACTIVE CONFERENCE ---
+    // --- Active Conference ---
     return (
         <div className="relative flex h-screen w-full flex-col bg-[#0a0a0a] text-zinc-100 overflow-hidden">
             <header className="absolute top-0 w-full z-20 flex h-18 items-center justify-between px-4 bg-linear-to-b from-black/80 to-transparent">

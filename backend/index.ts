@@ -7,7 +7,6 @@ const SERVER_HOST = process.env.SERVER_HOST ?? "localhost";
 
 async function main() {
     try {
-        // Try to connect to the database
         await db.execute("SELECT 1").then(() => {
             console.log("✨ Database connection successful");
         });
