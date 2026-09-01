@@ -45,8 +45,6 @@ export const createConference: RequestHandler<
             meetingCode: newConference.id,
         });
     } catch (error) {
-        console.log("Error creating conference:", error);
-
         res.status(500).json({
             message: "Failed to create conference",
         });
@@ -69,8 +67,6 @@ export const getAllConferences: RequestHandler = async (req, res) => {
 
         res.json(conferences);
     } catch (error) {
-        console.log("Error retrieving conferences:", error);
-
         res.status(500).json({ message: "Failed to retrieve conferences" });
     }
 };

@@ -67,12 +67,6 @@ export const initSocketServer = (httpServer: HttpServer) => {
     });
 
     io.on("connection", (socket) => {
-        console.log(`🔌 New client connected: ${socket.id}`);
-
-        socket.on("disconnect", () => {
-            console.log(`❌ Client disconnected: ${socket.id}`);
-        });
-
         registerConferenceHandlers(io, socket);
     });
 

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router";
 import { useSocket } from "@/hooks/use-socket";
 import { useConference } from "@/hooks/use-conference";
@@ -172,6 +172,12 @@ export default function ConferencePage() {
         isPermissionGranted,
         error: cameraError
     } = useUserMedia();
+
+    const userMediaStreamRef = useRef<MediaStream | null>(null);
+    useEffect(() => {
+        userMediaStreamRef.current = userMediaStream;
+    }, [userMediaStream]);
+
     useEffect(() => stopUserMedia, [stopUserMedia]);
 
     const {
@@ -188,7 +194,7 @@ export default function ConferencePage() {
     const handleSocketEvent = useCallback(
         async (emitEvent: any, event: string, payload: any) => {
             const actions: Record<string, () => void | Promise<void>> = {
-                "conference:join-failed": () =>
+                "conference:join-failed": () => {
                     setJoinError(
                         {
                             ALREADY_IN_CONFERENCE:
@@ -199,9 +205,24 @@ export default function ConferencePage() {
                                 "Room is full. Max 2 participants allowed."
                         }[payload?.code as string] ||
                             "Unable to join conference."
-                    ),
+                    );
+                },
+
                 "conference:new-user-joined": async () => {
+                    initializePeerConnection(undefined, (cand) =>
+                        emitEvent("conference:ice-candidate", {
+                            conference_id: conferenceId,
+                            iceCandidate: cand
+                        })
+                    );
+
+                    // FIX: Read from the ref to avoid the null stale closure
+                    if (userMediaStreamRef.current) {
+                        addLocalStream(userMediaStreamRef.current);
+                    }
+
                     const offer = await createOffer();
+
                     if (offer) {
                         emitEvent("conference:offer", {
                             conference_id: conferenceId,
@@ -210,7 +231,20 @@ export default function ConferencePage() {
                         });
                     }
                 },
+
                 "conference:offer": async () => {
+                    initializePeerConnection(undefined, (cand) =>
+                        emitEvent("conference:ice-candidate", {
+                            conference_id: conferenceId,
+                            iceCandidate: cand
+                        })
+                    );
+
+                    // FIX: Read from the ref here as well
+                    if (userMediaStreamRef.current) {
+                        addLocalStream(userMediaStreamRef.current);
+                    }
+
                     await setRemoteDescription({
                         sdp: payload.sdp,
                         type: "offer"
@@ -224,24 +258,27 @@ export default function ConferencePage() {
                         });
                     }
                 },
+
                 "conference:answer": async () => {
                     await setRemoteDescription({
                         sdp: payload.sdp,
                         type: "answer"
                     });
-                    toast.info("Connection established.");
+
+                    toast.success("Call connected", {
+                        duration: 1750
+                    });
                 },
+
                 "conference:ice-candidate": () => {
                     if (payload.iceCandidate) {
                         addIceCandidate(payload.iceCandidate);
                     }
                 },
-                "conference:user-left": () => {
-                    closePeerConnection();
-                    initializePeerConnection();
-                    // setHasJoined(false);
-                    // stopUserMedia();
 
+                "conference:user-left": async () => {
+                    // 3. Just clean up the connection and stop. DO NOT create an offer here.
+                    closePeerConnection();
                     toast.info("Participant left.");
                 }
             };
@@ -255,8 +292,9 @@ export default function ConferencePage() {
             setRemoteDescription,
             addIceCandidate,
             closePeerConnection,
-            // stopUserMedia
-            initializePeerConnection
+            initializePeerConnection,
+            userMediaStream, // Added to prevent stale closures
+            addLocalStream // Added to prevent stale closures
         ]
     );
 

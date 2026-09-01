@@ -142,7 +142,7 @@ export const useConference = () => {
         []
     );
 
-    // Cleanup
+    // Cleanup of peer connection on component unmount
     useEffect(() => {
         return () => {
             closePeerConnection();
