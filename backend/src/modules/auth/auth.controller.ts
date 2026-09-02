@@ -73,8 +73,8 @@ export const login: RequestHandler<any, any, LoginBody, any> = async (
 
     const refreshTokenCookieOptions: CookieOptions = {
         httpOnly: true,
-        secure: IS_DEVELOPMENT,
-        sameSite: IS_DEVELOPMENT ? "none" : "lax",
+        secure: !IS_DEVELOPMENT,
+        sameSite: IS_DEVELOPMENT ? "lax" : "none",
         maxAge: REFRESH_TOKEN_EXPIRY_MS,
         path: "/api/v1/auth",
     };
@@ -192,8 +192,8 @@ export const getAccessToken: RequestHandler = async (req, res) => {
 export const logout: RequestHandler = async (req, res) => {
     const refreshTokenCookieOptions: CookieOptions = {
         httpOnly: true,
-        secure: IS_DEVELOPMENT,
-        sameSite: IS_DEVELOPMENT ? "none" : "lax",
+        secure: !IS_DEVELOPMENT,
+        sameSite: IS_DEVELOPMENT ? "lax" : "none",
         maxAge: 0,
         path: "/api/v1/auth",
     };
