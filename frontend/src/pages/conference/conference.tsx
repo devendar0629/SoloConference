@@ -504,6 +504,7 @@ export default function ConferencePage() {
 
             <main className="flex-1 w-full h-full p-4 pt-18 pb-26">
                 <div className="relative mx-auto h-full max-w-7xl overflow-hidden rounded-3xl bg-zinc-900/50 ring-1 ring-white/5 shadow-2xl">
+                    {/* Remote User Media Stream */}
                     {remoteStream && (
                         <div className="absolute inset-0 z-10 bg-zinc-950">
                             <video
@@ -512,7 +513,7 @@ export default function ConferencePage() {
                                 }}
                                 autoPlay
                                 playsInline
-                                className="h-full w-full object-cover"
+                                className="h-full w-full object-cover rotate-y-180"
                             />
 
                             <div className="absolute top-6 left-6 z-20 flex items-center gap-2 rounded-lg bg-black/40 px-3 py-1.5 backdrop-blur-md border border-white/10">
@@ -527,6 +528,7 @@ export default function ConferencePage() {
                     <div
                         className={`transition-all duration-700 ease-in-out ${remoteStream ? "absolute bottom-4 right-4 z-30 h-48 w-32 sm:h-64 sm:w-44 md:h-72 md:w-56 rounded-2xl shadow-2xl ring-2 ring-white/10 overflow-hidden hover:scale-[1.02]" : "absolute inset-0 z-10"}`}
                     >
+                        {/* Current User Media Stream */}
                         {isPermissionGranted ? (
                             <video
                                 ref={(n) => {
@@ -535,13 +537,14 @@ export default function ConferencePage() {
                                 autoPlay
                                 playsInline
                                 muted
-                                className={`h-full w-full object-cover transition-opacity duration-500 ${isVideoOn ? "opacity-100" : "opacity-0"}`}
+                                className={`h-full w-full object-cover rotate-y-180 transition-opacity duration-500 ${isVideoOn ? "opacity-100" : "opacity-0"}`}
                             />
                         ) : (
                             <div className="absolute inset-0 flex items-center justify-center bg-zinc-900">
                                 <Loader2 className="h-8 w-8 animate-spin text-zinc-600" />
                             </div>
                         )}
+
                         {!isVideoOn && (
                             <div className="absolute inset-0 flex items-center justify-center bg-zinc-900/95 backdrop-blur-sm">
                                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-zinc-800">
@@ -564,6 +567,7 @@ export default function ConferencePage() {
                                 </p>
                             </div>
                         )}
+
                         <div className="absolute bottom-3 left-3 flex items-center gap-2 rounded-lg bg-black/50 px-2.5 py-1.5 backdrop-blur-md border border-white/10">
                             <span className="text-xs font-medium">You</span>
                             {!isMicOn && (

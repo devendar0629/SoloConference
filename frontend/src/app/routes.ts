@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, redirect } from "react-router";
 import RootLayout from "@/app/root-layout";
 import LoginPage from "@/pages/auth/login-page";
 import SignupPage from "@/pages/auth/signup-page";
@@ -17,6 +17,10 @@ export const router = createBrowserRouter([
                 path: "/",
                 Component: Protected,
                 children: [
+                    {
+                        index: true,
+                        loader: () => redirect("/dashboard")
+                    },
                     {
                         path: "/auth",
                         children: [
