@@ -364,8 +364,8 @@ export default function SoloConferenceDashboard() {
 
                                 <p className="text-zinc-400 leading-relaxed">
                                     Start a secure 1-on-1 meeting immediately.
-                                    Generate a room link to share with your
-                                    guest.
+                                    Generate a conference link to share with
+                                    your guest.
                                 </p>
                             </div>
 

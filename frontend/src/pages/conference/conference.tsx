@@ -326,7 +326,7 @@ export default function ConferencePage() {
             } catch (err: any) {
                 if (err?.response?.data?.code === "INVALID_PASSCODE")
                     setPasscodeError("Incorrect passcode.");
-                else toast.error("Error connecting to room.");
+                else toast.error("Error connecting to conference.");
             } finally {
                 setIsJoiningWithPasscode(false);
             }

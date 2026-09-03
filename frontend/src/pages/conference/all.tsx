@@ -237,7 +237,7 @@ export default function AllConferences() {
                                                 to={roomUrl}
                                             >
                                                 <div className="flex gap-2 justify-center">
-                                                    Enter Room
+                                                    Enter conference
                                                     <ExternalLink className="size-4 mt-px" />
                                                 </div>
                                             </Link>
