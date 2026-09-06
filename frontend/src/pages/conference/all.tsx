@@ -24,8 +24,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/utils";
 
-// Copy to Clipboard Button Component with state feedback
-function CopyCodeButton({ code }: { code: string }) {
+function CopyCodeButton({
+    code,
+    className
+}: {
+    code: string;
+    className?: string;
+}) {
     const [copied, setCopied] = useState(false);
 
     const handleCopy = (e: React.MouseEvent) => {
@@ -41,7 +46,7 @@ function CopyCodeButton({ code }: { code: string }) {
             onClick={handleCopy}
             variant="outline"
             size="sm"
-            className="w-fit gap-2 py-4"
+            className={`w-fit gap-2 py-4 ${className}`}
         >
             {copied ? (
                 <>
@@ -50,7 +55,7 @@ function CopyCodeButton({ code }: { code: string }) {
                 </>
             ) : (
                 <>
-                    <Copy className="size-3.5" />
+                    <Copy className="size-3" />
                     <span>Copy Code</span>
                 </>
             )}
@@ -193,14 +198,19 @@ export default function AllConferences() {
                             return (
                                 <Card
                                     key={conference.id}
-                                    className="group relative flex flex-col justify-between overflow-hidden border-zinc-800/80 bg-zinc-900/40 backdrop-blur-sm transition-all duration-300 hover:border-zinc-700 hover:bg-zinc-900/80 hover:shadow-xl gap-0 hover:shadow-black/40"
+                                    className="group px-0 relative flex flex-col justify-between overflow-hidden border-zinc-800/80 bg-zinc-900/40 backdrop-blur-sm transition-all duration-300 hover:border-zinc-700 hover:bg-zinc-900/80 hover:shadow-xl gap-0 hover:shadow-black/40"
                                 >
                                     {/* Card Header & Badges */}
-                                    <CardHeader className="space-y-3 pb-3">
+                                    <CardHeader className="space-y-3 pb-3 flex justify-between">
                                         <CardTitle className="line-clamp-1 text-lg font-semibold text-zinc-100 transition-colors group-hover:text-indigo-300">
                                             {conference.title ??
                                                 "Untitled Conference"}
                                         </CardTitle>
+
+                                        <CopyCodeButton
+                                            code={roomCode}
+                                            className="text-xs"
+                                        />
                                     </CardHeader>
 
                                     {/* Card Details Body */}
@@ -228,17 +238,17 @@ export default function AllConferences() {
                                     </CardContent>
 
                                     {/* Card Footer Actions */}
-                                    <CardFooter className="gap-2 flex border-t border-zinc-800/60">
-                                        <CopyCodeButton code={roomCode} />
-
-                                        <Button variant={"link"}>
+                                    <CardFooter className="gap-2 justify-center flex border-t border-zinc-800/60">
+                                        <Button
+                                            variant={"outline"}
+                                            className="w-full py-4.5"
+                                        >
                                             <Link
                                                 className="flex gap-2 justify-center"
                                                 to={roomUrl}
                                             >
-                                                <div className="flex gap-2 justify-center">
+                                                <div className="flex gap-2 items-center">
                                                     Enter conference
-                                                    <ExternalLink className="size-4 mt-px" />
                                                 </div>
                                             </Link>
                                         </Button>
