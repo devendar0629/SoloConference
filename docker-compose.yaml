@@ -4,12 +4,15 @@ services:
     container_name: soloconference_db
     env_file:
       - ./backend/database.env
-    ports:
-      - "5432:5432"
     volumes:
       - soloconference_db_data:/var/lib/postgresql
     networks:
       - soloconference_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   backend:
     image: soloconference_backend:latest
@@ -22,7 +25,8 @@ services:
     networks:
       - soloconference_network
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   frontend:
     image: soloconference_frontend:latest

@@ -1,5 +1,7 @@
 #!/bin/sh
 
-echo "Starting application..."
+echo "✨ Applying database migrations..."
+npm run db:migrate
 
-npm run start
+echo "✨ Starting application..."
+exec npm run start
