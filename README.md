@@ -54,8 +54,3 @@ SoloConference is a secure, real-time 1-on-1 video calling application built wit
     ```
 
 5. Access the application in your browser at `http://localhost:5173` or at the port which you have configured in `frontend/.env.local` file.
-
-### Manual Setup
-
-1. Clone the repository.
-
