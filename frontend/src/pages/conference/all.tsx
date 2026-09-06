@@ -6,7 +6,6 @@ import {
     Sparkles,
     Copy,
     Check,
-    ExternalLink,
     Video,
     Clock,
     RefreshCw
