@@ -14,7 +14,9 @@ import {
     Wifi,
     WifiOff,
     AlertCircle,
-    LockIcon
+    LockIcon,
+    CopyIcon,
+    CheckIcon
 } from "lucide-react";
 import {
     Dialog,
@@ -137,6 +139,35 @@ export const PasscodeInputScreen = ({
                 </form>
             </DialogContent>
         </Dialog>
+    );
+};
+
+// Render a small button that copies the given code to clipboard and shows a tooltip when copied
+const CopyCodeButton = ({ code }: { code: string }) => {
+    const [copied, setCopied] = useState(false);
+
+    const handleCopy = () => {
+        navigator.clipboard.writeText(code);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    return (
+        <Button
+            variant="outline"
+            onClick={handleCopy}
+            className="px-2 py-1 text-xs"
+        >
+            {copied ? (
+                <span className="flex items-center gap-1">
+                    <CheckIcon className="size-3 text-green-500" /> Copied!
+                </span>
+            ) : (
+                <span className="flex items-center gap-1">
+                    <CopyIcon className="size-3" /> Copy conference code
+                </span>
+            )}
+        </Button>
     );
 };
 
@@ -466,18 +497,16 @@ export default function ConferencePage() {
         <div className="relative flex h-screen w-full flex-col bg-[#0a0a0a] text-zinc-100 overflow-hidden">
             <header className="absolute top-0 w-full z-20 flex h-18 items-center justify-between px-4 bg-linear-to-b from-black/80 to-transparent">
                 <div className="flex items-center gap-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-800/80 backdrop-blur-md ring-1 ring-white/10">
-                        <Users className="h-5 w-5 text-blue-400" />
+                    <div className="flex size-12 items-center justify-center rounded-xl bg-zinc-800/80 backdrop-blur-md ring-1 ring-white/10">
+                        <Users className="size-6 text-blue-400" />
                     </div>
 
                     <div>
-                        <h1 className="text-sm font-semibold leading-tight">
+                        <h1 className="text-sm font-semibold leading-tight ml-0.75">
                             {conference?.title || "Conference Room"}
                         </h1>
 
-                        <p className="text-xs text-zinc-400 font-mono">
-                            {conferenceId}
-                        </p>
+                        <CopyCodeButton code={conferenceId ?? ""} />
                     </div>
                 </div>
 
@@ -559,10 +588,12 @@ export default function ConferencePage() {
                                     <div className="absolute inset-0 rounded-full border-[3px] border-blue-500/30 border-t-blue-500 animate-spin" />
                                     <Users className="h-8 w-8 text-zinc-300" />
                                 </div>
-                                <h2 className="text-2xl font-semibold mb-2 drop-shadow-md">
+
+                                <h2 className="sm:text-2xl text-lg font-semibold mb-2 drop-shadow-md">
                                     Waiting for other participant to join
                                 </h2>
-                                <p className="text-zinc-300 font-medium drop-shadow-md">
+
+                                <p className="text-zinc-300 font-medium drop-shadow-md sm:text-base text-sm">
                                     You're the only one here right now
                                 </p>
                             </div>
